@@ -9,7 +9,7 @@ pub struct Lexer<'a> {
   /// current position in input (points to current char)
   pos: usize,
   /// current reading position in input (after current char)
-  next_pos: usize,
+  read_pos: usize,
   /// current char under examination
   ///
   /// The low-level representation of Rust's String type is `Vec<u8>`,
@@ -21,7 +21,7 @@ pub fn new(input: &str) -> Lexer {
   let mut lexer = Lexer {
     input,
     pos: 0,
-    next_pos: 0,
+    read_pos: 0,
     ch: token::CHAR_NUL_BYTE,
   };
   lexer.read_char();
@@ -30,13 +30,13 @@ pub fn new(input: &str) -> Lexer {
 
 impl<'a> Lexer<'a> {
   fn read_char(&mut self) {
-    self.ch = if self.next_pos >= self.input.len() {
+    self.ch = if self.read_pos >= self.input.len() {
       token::CHAR_NUL_BYTE
     } else {
-      self.input.as_bytes()[self.next_pos]
+      self.input.as_bytes()[self.read_pos]
     };
-    self.pos = self.next_pos;
-    self.next_pos += 1;
+    self.pos = self.read_pos;
+    self.read_pos += 1;
   }
 
   fn next_token(&mut self) -> token::Token {
