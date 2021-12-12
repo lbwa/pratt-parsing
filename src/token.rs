@@ -24,6 +24,6 @@ pub enum Token {
   Let,
 }
 
-pub const CHAR_NUL: &str = "\u{0000}";
+const CHAR_NUL: &str = "\u{0000}";
 
 pub const CHAR_NUL_BYTE: u8 = CHAR_NUL.as_bytes()[0];

@@ -2,16 +2,13 @@ use crate::token::Token;
 
 #[test]
 fn next_token() {
-  let input = "=+(){},;";
+  let input = "let five = 5;";
 
   let expected = vec![
+    Token::Let,
+    Token::Ident(String::from("five")),
     Token::Assign,
-    Token::Plus,
-    Token::LParen,
-    Token::RParen,
-    Token::LBrace,
-    Token::RBrace,
-    Token::Comma,
+    Token::Int(5),
     Token::Semicolon,
     Token::EOF,
   ];
@@ -20,6 +17,6 @@ fn next_token() {
   for tt in expected {
     let tok = lexer.next_token();
 
-    assert_eq!(tok, tt);
+    assert_eq!(tt, tok);
   }
 }

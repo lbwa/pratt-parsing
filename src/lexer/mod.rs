@@ -30,7 +30,7 @@ pub fn new(input: &str) -> Lexer {
   lexer
 }
 
-impl<'a> Lexer<'a> {
+impl Lexer<'_> {
   fn read_char(&mut self) {
     self.ch = if self.read_pos >= self.input.len() {
       token::CHAR_NUL_BYTE
@@ -41,7 +41,46 @@ impl<'a> Lexer<'a> {
     self.read_pos += 1;
   }
 
+  fn read_identifier(&mut self) -> Token {
+    let from = self.pos;
+
+    loop {
+      match self.ch {
+        b'a'..=b'z' | b'A'..=b'Z' | b'_' => {
+          self.read_char();
+        }
+        _ => break,
+      }
+    }
+
+    let literal = &self.input[from..self.pos];
+
+    match literal {
+      "let" => Token::Let,
+      "fn" => Token::Function,
+      _ => Token::Ident(String::from(literal)),
+    }
+  }
+
+  fn read_number(&mut self) -> Token {
+    let from = self.pos;
+
+    loop {
+      match self.ch {
+        b'0'..=b'9' => {
+          self.read_char();
+        }
+        _ => break,
+      }
+    }
+    match self.input[from..self.pos].parse::<i64>() {
+      Ok(value) => Token::Int(value),
+      _ => Token::Illegal,
+    }
+  }
+
   fn next_token(&mut self) -> token::Token {
+    self.skip_whitespace();
     let tok = match self.ch {
       b'=' => Token::Assign,
       b';' => Token::Semicolon,
@@ -51,12 +90,38 @@ impl<'a> Lexer<'a> {
       b'+' => Token::Plus,
       b'{' => Token::LBrace,
       b'}' => Token::RBrace,
-      token::CHAR_NUL_BYTE => Token::EOF,
-      _ => {
-        panic!();
+      b'a'..=b'z' | b'A'..=b'Z' | b'_' => {
+        // NOTE: terminate next_token function evaluation and
+        // use read_identifier's returned value as next_token returned value
+        return self.read_identifier();
       }
+      b'0'..=b'9' => {
+        // NOTE: terminate next_token function evaluation and
+        // use read_identifier's returned value as next_token returned value
+        return self.read_number();
+      }
+
+      token::CHAR_NUL_BYTE => Token::EOF,
+      _ => Token::Illegal,
     };
     self.read_char();
     tok
   }
+
+  fn skip_whitespace(&mut self) {
+    loop {
+      match self.ch {
+        b' ' | b'\t' | b'\n' | b'\r' => {
+          self.read_char();
+        }
+        _ => {
+          break;
+        }
+      }
+    }
+  }
+}
+
+fn is_number(ch: u8) -> bool {
+  b'0' <= ch && ch <= b'9'
 }
