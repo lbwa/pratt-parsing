@@ -44,13 +44,8 @@ impl Lexer<'_> {
   fn read_identifier(&mut self) -> Token {
     let from = self.pos;
 
-    loop {
-      match self.ch {
-        b'a'..=b'z' | b'A'..=b'Z' | b'_' => {
-          self.read_char();
-        }
-        _ => break,
-      }
+    while let b'a'..=b'z' | b'A'..=b'Z' | b'_' = self.ch {
+      self.read_char();
     }
 
     let literal = &self.input[from..self.pos];
@@ -65,13 +60,8 @@ impl Lexer<'_> {
   fn read_number(&mut self) -> Token {
     let from = self.pos;
 
-    loop {
-      match self.ch {
-        b'0'..=b'9' => {
-          self.read_char();
-        }
-        _ => break,
-      }
+    while let b'0'..=b'9' = self.ch {
+      self.read_char();
     }
     match self.input[from..self.pos].parse::<i64>() {
       Ok(value) => Token::Int(value),
@@ -109,19 +99,12 @@ impl Lexer<'_> {
   }
 
   fn skip_whitespace(&mut self) {
-    loop {
-      match self.ch {
-        b' ' | b'\t' | b'\n' | b'\r' => {
-          self.read_char();
-        }
-        _ => {
-          break;
-        }
-      }
+    while let b' ' | b'\t' | b'\n' | b'\r' = self.ch {
+      self.read_char();
     }
   }
 }
 
 fn is_number(ch: u8) -> bool {
-  b'0' <= ch && ch <= b'9'
+  (b'0'..=b'9').contains(&ch)
 }
