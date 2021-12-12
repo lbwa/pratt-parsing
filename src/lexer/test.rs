@@ -1,27 +1,25 @@
-use crate::token;
-use crate::token::TokenType;
+use crate::token::Token;
 
 #[test]
 fn next_token() {
   let input = "=+(){},;";
 
   let expected = vec![
-    (TokenType::Assign, "="),
-    (TokenType::Plus, "+"),
-    (TokenType::LParen, "("),
-    (TokenType::RParen, ")"),
-    (TokenType::LBrace, "{"),
-    (TokenType::RBrace, "}"),
-    (TokenType::Comma, ","),
-    (TokenType::Semicolon, ";"),
-    (TokenType::EOF, token::CHAR_NUL),
+    Token::Assign,
+    Token::Plus,
+    Token::LParen,
+    Token::RParen,
+    Token::LBrace,
+    Token::RBrace,
+    Token::Comma,
+    Token::Semicolon,
+    Token::EOF,
   ];
 
   let mut lexer = super::new(input);
-  for (tt, literal) in expected {
+  for tt in expected {
     let tok = lexer.next_token();
 
-    assert_eq!(tok.token_type, tt);
-    assert_eq!(tok.literal, literal);
+    assert_eq!(tok, tt);
   }
 }

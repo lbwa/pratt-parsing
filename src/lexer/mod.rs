@@ -2,7 +2,7 @@
 mod test;
 
 use crate::token;
-use crate::token::TokenType;
+use crate::token::Token;
 
 pub struct Lexer<'a> {
   input: &'a str,
@@ -41,15 +41,15 @@ impl<'a> Lexer<'a> {
 
   fn next_token(&mut self) -> token::Token {
     let tok = match self.ch {
-      b'=' => token::new(TokenType::Assign, self.ch),
-      b';' => token::new(TokenType::Semicolon, self.ch),
-      b'(' => token::new(TokenType::LParen, self.ch),
-      b')' => token::new(TokenType::RParen, self.ch),
-      b',' => token::new(TokenType::Comma, self.ch),
-      b'+' => token::new(TokenType::Plus, self.ch),
-      b'{' => token::new(TokenType::LBrace, self.ch),
-      b'}' => token::new(TokenType::RBrace, self.ch),
-      token::CHAR_NUL_BYTE => token::new(TokenType::EOF, token::CHAR_NUL_BYTE),
+      b'=' => Token::Assign,
+      b';' => Token::Semicolon,
+      b'(' => Token::LParen,
+      b')' => Token::RParen,
+      b',' => Token::Comma,
+      b'+' => Token::Plus,
+      b'{' => Token::LBrace,
+      b'}' => Token::RBrace,
+      token::CHAR_NUL_BYTE => Token::EOF,
       _ => {
         panic!();
       }

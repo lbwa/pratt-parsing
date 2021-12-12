@@ -1,22 +1,25 @@
 #[derive(Debug, Clone, PartialEq)]
-pub enum TokenType {
+pub enum Token {
   Illegal,
   EOF,
 
-  Ident,
-  Int,
+  // identifier + literal
+  Ident(String),
+  Int(i64),
 
+  // statements
   Assign,
   Plus,
 
+  // delimiters
   Comma,
   Semicolon,
-
   LParen,
   RParen,
   LBrace,
   RBrace,
 
+  // reserved words
   Function,
   Let,
 }
@@ -24,15 +27,3 @@ pub enum TokenType {
 pub const CHAR_NUL: &str = "\u{0000}";
 
 pub const CHAR_NUL_BYTE: u8 = CHAR_NUL.as_bytes()[0];
-
-pub struct Token {
-  pub token_type: TokenType,
-  pub literal: String,
-}
-
-pub fn new(token_type: TokenType, ch: u8) -> Token {
-  Token {
-    token_type,
-    literal: String::from_utf8(vec![ch]).unwrap(),
-  }
-}
