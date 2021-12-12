@@ -6,6 +6,7 @@ use crate::token::Token;
 
 pub struct Lexer<'a> {
   input: &'a str,
+  bytes: Vec<u8>,
   /// current position in input (points to current char)
   pos: usize,
   /// current reading position in input (after current char)
@@ -20,6 +21,7 @@ pub struct Lexer<'a> {
 pub fn new(input: &str) -> Lexer {
   let mut lexer = Lexer {
     input,
+    bytes: input.as_bytes().to_owned(),
     pos: 0,
     read_pos: 0,
     ch: token::CHAR_NUL_BYTE,
@@ -33,7 +35,7 @@ impl<'a> Lexer<'a> {
     self.ch = if self.read_pos >= self.input.len() {
       token::CHAR_NUL_BYTE
     } else {
-      self.input.as_bytes()[self.read_pos]
+      self.bytes[self.read_pos]
     };
     self.pos = self.read_pos;
     self.read_pos += 1;
