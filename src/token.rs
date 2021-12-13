@@ -42,6 +42,11 @@ pub enum Token {
   // reserved words
   Function,
   Let,
+  True,
+  False,
+  If,
+  Else,
+  Return,
 }
 
 const CHAR_NUL: &str = "\u{0000}";

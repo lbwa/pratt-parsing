@@ -10,6 +10,12 @@ fn next_token() {
   let result = add(five, ten);
   !-/*1;
   2 < 3 > 2;
+
+  if (4 < 5) {
+    return true;
+  } else {
+    return false;
+  }
   ";
 
   let expected = vec![
@@ -68,6 +74,28 @@ fn next_token() {
     Token::Gt,
     Token::Int(2),
     Token::Semicolon,
+    //
+    Token::If,
+    Token::LParen,
+    Token::Int(4),
+    Token::Lt,
+    Token::Int(5),
+    Token::RParen,
+    Token::LBrace,
+    //
+    Token::Return,
+    Token::True,
+    Token::Semicolon,
+    //
+    Token::RBrace,
+    Token::Else,
+    Token::LBrace,
+    //
+    Token::Return,
+    Token::False,
+    Token::Semicolon,
+    //
+    Token::RBrace,
     Token::EOF,
   ];
 

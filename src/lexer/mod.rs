@@ -51,8 +51,13 @@ impl Lexer<'_> {
     let literal = &self.input[from..self.pos];
 
     match literal {
-      "let" => Token::Let,
       "fn" => Token::Function,
+      "let" => Token::Let,
+      "true" => Token::True,
+      "false" => Token::False,
+      "if" => Token::If,
+      "else" => Token::Else,
+      "return" => Token::Return,
       _ => Token::Ident(String::from(literal)),
     }
   }
