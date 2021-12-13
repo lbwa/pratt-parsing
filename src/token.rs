@@ -7,16 +7,36 @@ pub enum Token {
   Ident(String),
   Int(i64),
 
-  // statements
+  // operators
+  /// `=`
   Assign,
+  /// `+`
   Plus,
+  /// `-`
+  Minus,
+  /// `!`
+  Bang,
+  /// `*`
+  Asterisk,
+  /// `/`
+  Slash,
+  /// `<`
+  Lt,
+  /// `>`
+  Gt,
 
   // delimiters
+  /// ,
   Comma,
+  /// ;
   Semicolon,
+  /// (
   LParen,
+  /// )
   RParen,
+  /// {
   LBrace,
+  /// }
   RBrace,
 
   // reserved words

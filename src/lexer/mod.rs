@@ -72,14 +72,24 @@ impl Lexer<'_> {
   fn next_token(&mut self) -> token::Token {
     self.skip_whitespace();
     let tok = match self.ch {
+      // operators
       b'=' => Token::Assign,
+      b'+' => Token::Plus,
+      b'-' => Token::Minus,
+      b'!' => Token::Bang,
+      b'/' => Token::Slash,
+      b'*' => Token::Asterisk,
+      b'<' => Token::Lt,
+      b'>' => Token::Gt,
+
+      // delimiters
       b';' => Token::Semicolon,
+      b',' => Token::Comma,
       b'(' => Token::LParen,
       b')' => Token::RParen,
-      b',' => Token::Comma,
-      b'+' => Token::Plus,
       b'{' => Token::LBrace,
       b'}' => Token::RBrace,
+
       b'a'..=b'z' | b'A'..=b'Z' | b'_' => {
         // NOTE: terminate next_token function evaluation and
         // use read_identifier's returned value as next_token returned value

@@ -8,6 +8,8 @@ fn next_token() {
     x + y;
   };
   let result = add(five, ten);
+  !-/*1;
+  2 < 3 > 2;
   ";
 
   let expected = vec![
@@ -51,6 +53,20 @@ fn next_token() {
     Token::Comma,
     Token::Ident(String::from("ten")),
     Token::RParen,
+    Token::Semicolon,
+    //
+    Token::Bang,
+    Token::Minus,
+    Token::Slash,
+    Token::Asterisk,
+    Token::Int(1),
+    Token::Semicolon,
+    //
+    Token::Int(2),
+    Token::Lt,
+    Token::Int(3),
+    Token::Gt,
+    Token::Int(2),
     Token::Semicolon,
     Token::EOF,
   ];
