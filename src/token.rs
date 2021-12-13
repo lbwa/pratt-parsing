@@ -24,6 +24,8 @@ pub enum Token {
   Lt,
   /// `>`
   Gt,
+  Eq,
+  NotEq,
 
   // delimiters
   /// ,

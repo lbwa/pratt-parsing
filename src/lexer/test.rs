@@ -1,7 +1,7 @@
 use crate::token::Token;
 
 #[test]
-fn next_token() {
+fn tokenize() {
   let input = "let five = 5;
   let ten = 10;
   let add = fn(x, y) {
@@ -16,6 +16,9 @@ fn next_token() {
   } else {
     return false;
   }
+
+  12 == 12;
+  11 != 12;
   ";
 
   let expected = vec![
@@ -96,6 +99,15 @@ fn next_token() {
     Token::Semicolon,
     //
     Token::RBrace,
+    //
+    Token::Int(12),
+    Token::Eq,
+    Token::Int(12),
+    Token::Semicolon,
+    Token::Int(11),
+    Token::NotEq,
+    Token::Int(12),
+    Token::Semicolon,
     Token::EOF,
   ];
 

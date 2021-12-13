@@ -31,6 +31,17 @@ pub fn new(input: &str) -> Lexer {
 }
 
 impl Lexer<'_> {
+  /// similar to `self.read_char`, except that it doesn't increment `self.pos`
+  /// and `self.read_pos`. We only want to "peek" ahead in the input and not
+  /// move around it.
+  fn peek_char(&mut self) -> u8 {
+    if self.read_pos >= self.input.len() {
+      token::CHAR_NUL_BYTE
+    } else {
+      self.bytes[self.read_pos]
+    }
+  }
+
   fn read_char(&mut self) {
     self.ch = if self.read_pos >= self.input.len() {
       token::CHAR_NUL_BYTE
@@ -78,10 +89,24 @@ impl Lexer<'_> {
     self.skip_whitespace();
     let tok = match self.ch {
       // operators
-      b'=' => Token::Assign,
+      b'=' => {
+        if self.peek_char() == b'=' {
+          self.read_char();
+          Token::Eq
+        } else {
+          Token::Assign
+        }
+      }
       b'+' => Token::Plus,
       b'-' => Token::Minus,
-      b'!' => Token::Bang,
+      b'!' => {
+        if self.peek_char() == b'=' {
+          self.read_char();
+          Token::NotEq
+        } else {
+          Token::Bang
+        }
+      }
       b'/' => Token::Slash,
       b'*' => Token::Asterisk,
       b'<' => Token::Lt,
