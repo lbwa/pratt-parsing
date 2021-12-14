@@ -24,17 +24,17 @@ pub fn new(lexer: Lexer<'_>) -> Parser {
 
   // read 2 tokens, so current_token and next_token are both set.
   for _ in 0..=1 {
-    parser.move_to_next();
+    parser.move_to_next_tok();
   }
 
   parser
 }
 
 impl<'a> Parser<'a> {
-  /// move to next token
-  fn move_to_next(&mut self) {
+  /// It' s used to move pointer to next token, and usually work with `self.parse_*` methods.
+  fn move_to_next_tok(&mut self) {
     self.current_token = self.next_token.clone();
-    self.next_token = self.lexer.next_token();
+    self.next_token = self.lexer.move_to_next_tok();
   }
 
   /// loop which is used to parse statement until we encounter a Eof character
@@ -45,7 +45,7 @@ impl<'a> Parser<'a> {
       if let Some(stmt) = self.parse_stmt() {
         program.push(stmt);
       }
-      self.move_to_next();
+      self.move_to_next_tok();
     }
     program
   }
@@ -59,7 +59,7 @@ impl<'a> Parser<'a> {
 
   fn parse_let_stmt(&mut self) -> Option<ast::Statement> {
     match &self.next_token {
-      Token::Ident(_) => self.move_to_next(),
+      Token::Ident(_) => self.move_to_next_tok(),
       _ => return None,
     };
 
@@ -72,11 +72,11 @@ impl<'a> Parser<'a> {
       return None;
     }
 
-    self.move_to_next();
+    self.move_to_next_tok();
 
     // TODO: We're skipping the expression until we encounter a semicolon
     if self.next_token_is(Token::Semicolon) {
-      self.move_to_next();
+      self.move_to_next_tok();
     }
     Some(ast::Statement::Let(name))
   }
@@ -90,7 +90,7 @@ impl<'a> Parser<'a> {
 
   fn expect_peek_is(&mut self, tok: Token) -> bool {
     if self.next_token_is(tok) {
-      self.move_to_next();
+      self.move_to_next_tok();
       true
     } else {
       false

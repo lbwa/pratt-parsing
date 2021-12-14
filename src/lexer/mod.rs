@@ -85,7 +85,7 @@ impl Lexer<'_> {
     }
   }
 
-  pub fn next_token(&mut self) -> token::Token {
+  pub fn move_to_next_tok(&mut self) -> token::Token {
     self.skip_whitespace();
     let tok = match self.ch {
       // operators
