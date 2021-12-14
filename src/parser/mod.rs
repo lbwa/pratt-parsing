@@ -18,8 +18,8 @@ pub struct Parser<'a> {
 pub fn new(lexer: Lexer<'_>) -> Parser {
   let mut parser = Parser {
     lexer,
-    current_token: Token::EOF,
-    next_token: Token::EOF,
+    current_token: Token::Eof,
+    next_token: Token::Eof,
   };
 
   // read 2 tokens, so current_token and next_token are both set.
@@ -37,11 +37,11 @@ impl<'a> Parser<'a> {
     self.next_token = self.lexer.next_token();
   }
 
-  /// loop which is used to parse statement until we encounter a EOF character
+  /// loop which is used to parse statement until we encounter a Eof character
   pub fn parse(&mut self) -> ast::Program {
     let mut program: ast::Program = vec![];
 
-    while !self.current_token_is(Token::EOF) {
+    while !self.current_token_is(Token::Eof) {
       if let Some(stmt) = self.parse_stmt() {
         program.push(stmt);
       }

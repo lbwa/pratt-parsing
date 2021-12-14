@@ -108,7 +108,7 @@ fn tokenize() {
     Token::NotEq,
     Token::Int(12),
     Token::Semicolon,
-    Token::EOF,
+    Token::Eof,
   ];
 
   let mut lexer = super::new(input);

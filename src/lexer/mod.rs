@@ -131,7 +131,7 @@ impl Lexer<'_> {
         return self.read_number();
       }
 
-      token::CHAR_NUL_BYTE => Token::EOF,
+      token::CHAR_NUL_BYTE => Token::Eof,
       _ => Token::Illegal,
     };
     self.read_char();
