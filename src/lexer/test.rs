@@ -108,12 +108,12 @@ fn tokenize() {
     Token::NotEq,
     Token::Int(12),
     Token::Semicolon,
-    Token::EOF,
+    Token::Eof,
   ];
 
   let mut lexer = super::new(input);
   for tt in expected {
-    let tok = lexer.next_token();
+    let tok = lexer.move_to_next_tok();
 
     assert_eq!(tt, tok);
   }
