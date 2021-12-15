@@ -1,9 +1,11 @@
-#[cfg(test)]
-mod test;
-
 use crate::ast;
 use crate::lexer::Lexer;
 use crate::token::Token;
+use error::*;
+
+mod error;
+#[cfg(test)]
+mod test;
 
 pub struct Parser<'a> {
   /// An instance of the lexer, on which we repeatedly call next_token() to get
@@ -13,6 +15,7 @@ pub struct Parser<'a> {
   /// next token, to decide whether we are at the end of the line or if we are
   /// at just the start of an arithmetic expression.
   next_token: Token,
+  errors: ParseErrors,
 }
 
 pub fn new(lexer: Lexer<'_>) -> Parser {
@@ -20,6 +23,7 @@ pub fn new(lexer: Lexer<'_>) -> Parser {
     lexer,
     current_token: Token::Eof,
     next_token: Token::Eof,
+    errors: vec![],
   };
 
   // read 2 tokens, so current_token and next_token are both set.
@@ -37,7 +41,7 @@ impl<'a> Parser<'a> {
     self.next_token = self.lexer.move_to_next_tok();
   }
 
-  /// loop which is used to parse statement until we encounter a Eof character
+  /// We're using a loop to parse statements until we encounter a Eof character
   pub fn parse(&mut self) -> ast::Program {
     let mut program: ast::Program = vec![];
 
@@ -58,9 +62,13 @@ impl<'a> Parser<'a> {
   }
 
   fn parse_let_stmt(&mut self) -> Option<ast::Statement> {
+    // This is equivalent to self.expect_next_is(Token::Ident(...))
     match &self.next_token {
       Token::Ident(_) => self.move_to_next_tok(),
-      _ => return None,
+      _ => {
+        self.next_token_error(Token::Ident(String::from("<Identifier literal>")));
+        return None;
+      }
     };
 
     let name = match self.parse_ident() {
@@ -68,14 +76,14 @@ impl<'a> Parser<'a> {
       None => return None,
     };
 
-    if !self.expect_peek_is(Token::Assign) {
+    if !self.expect_next_is(Token::Assign) {
       return None;
     }
 
     self.move_to_next_tok();
 
     // TODO: We're skipping the expression until we encounter a semicolon
-    if self.next_token_is(Token::Semicolon) {
+    if self.next_token_is(&Token::Semicolon) {
       self.move_to_next_tok();
     }
     Some(ast::Statement::Let(name))
@@ -88,11 +96,12 @@ impl<'a> Parser<'a> {
     }
   }
 
-  fn expect_peek_is(&mut self, tok: Token) -> bool {
-    if self.next_token_is(tok) {
+  fn expect_next_is(&mut self, tok: Token) -> bool {
+    if self.next_token_is(&tok) {
       self.move_to_next_tok();
       true
     } else {
+      self.next_token_error(tok);
       false
     }
   }
@@ -101,7 +110,21 @@ impl<'a> Parser<'a> {
     self.current_token == tok
   }
 
-  fn next_token_is(&self, tok: Token) -> bool {
-    self.next_token == tok
+  fn next_token_is(&self, tok: &Token) -> bool {
+    self.next_token == *tok
+  }
+
+  fn next_token_error(&mut self, tok: Token) {
+    self.errors.push(ParseError::new(
+      ParseErrorKind::UnexpectedToken,
+      format!(
+        "expected next token to be {:?}, got {:?} instead.",
+        tok, self.next_token
+      ),
+    ));
+  }
+
+  fn get_errors(&self) -> ParseErrors {
+    self.errors.clone()
   }
 }
