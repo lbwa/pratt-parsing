@@ -57,6 +57,7 @@ impl<'a> Parser<'a> {
   fn parse_stmt(&mut self) -> Option<ast::Statement> {
     match self.current_token {
       Token::Let => self.parse_let_stmt(),
+      Token::Return => self.parse_return_stmt(),
       _ => None,
     }
   }
@@ -64,6 +65,8 @@ impl<'a> Parser<'a> {
   fn parse_let_stmt(&mut self) -> Option<ast::Statement> {
     // This is equivalent to self.expect_next_is(Token::Ident(...))
     match &self.next_token {
+      // The reason we don't call self.expect_next_is function is we need
+      // wildcard matching.
       Token::Ident(_) => self.move_to_next_tok(),
       _ => {
         self.next_token_error(Token::Ident(String::from("<Identifier literal>")));
@@ -94,6 +97,14 @@ impl<'a> Parser<'a> {
       Token::Ident(ident) => Some(ast::Ident(ident.clone())),
       _ => None,
     }
+  }
+
+  fn parse_return_stmt(&mut self) -> Option<ast::Statement> {
+    // TODO: we're skipping the expression until we encounter a semicolon.
+    while !self.current_token_is(Token::Semicolon) {
+      self.move_to_next_tok();
+    }
+    Some(ast::Statement::Return)
   }
 
   fn expect_next_is(&mut self, tok: Token) -> bool {

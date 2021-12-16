@@ -37,3 +37,18 @@ fn let_statements() {
     ]
   );
 }
+
+#[test]
+fn return_statements() {
+  let input = "
+  return 5;
+  return 10;
+  return 993322;
+  ";
+
+  let mut parser = parser::new(lexer::new(input));
+  let program = parser.parse();
+  check_parse_error(&mut parser);
+
+  assert_eq!(program, vec![Stmt::Return, Stmt::Return, Stmt::Return])
+}
