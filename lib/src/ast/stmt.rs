@@ -6,5 +6,3 @@ pub enum Statement {
   Let(Ident),
   Return,
 }
-
-pub type Program = Vec<Statement>;
