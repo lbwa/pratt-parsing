@@ -20,6 +20,7 @@ pub struct Parser<'a> {
   /// An instance of the lexer, on which we repeatedly call next_token() to get
   /// the next token in the input.
   lexer: Lexer<'a>,
+  // The last of tokens we have read.
   current_token: Token,
   /// next token, to decide whether we are at the end of the line or if we are
   /// at just the start of an arithmetic expression.
@@ -41,6 +42,12 @@ trait ParseStmt {
   fn parse_stmt(&mut self) -> Option<ast::Statement>;
   fn parse_let_stmt(&mut self) -> Option<ast::Statement>;
   fn parse_return_stmt(&mut self) -> Option<ast::Statement>;
+  fn parse_expr_stmt(&mut self) -> Option<ast::Statement>;
+}
+
+trait ParseExpr {
+  fn parse_expr(&self, precedence: ast::Precedence) -> Option<ast::Expr>;
+  fn parse_ident_expr(&self) -> Option<ast::Expr>;
 }
 
 pub fn new(lexer: Lexer<'_>) -> Parser {
@@ -125,7 +132,7 @@ impl ParseStmt for Parser<'_> {
     match self.current_token {
       Token::Let => self.parse_let_stmt(),
       Token::Return => self.parse_return_stmt(),
-      _ => None,
+      _ => self.parse_expr_stmt(),
     }
   }
 
@@ -165,5 +172,31 @@ impl ParseStmt for Parser<'_> {
       self.move_to_next_tok();
     }
     Some(ast::Statement::Return)
+  }
+
+  fn parse_expr_stmt(&mut self) -> Option<ast::Statement> {
+    if let Some(expr) = self.parse_expr(ast::Precedence::Lowest) {
+      // expression semicolon is optional
+      if self.next_token_is(&Token::Semicolon) {
+        self.move_to_next_tok();
+      }
+      Some(ast::Statement::Expr(expr))
+    } else {
+      None
+    }
+  }
+}
+
+impl ParseExpr for Parser<'_> {
+  fn parse_expr(&self, _precedence: ast::Precedence) -> Option<ast::Expr> {
+    match self.current_token {
+      Token::Ident(_) => self.parse_ident_expr(),
+      // unexpected token type
+      _ => None,
+    }
+  }
+
+  fn parse_ident_expr(&self) -> Option<ast::Expr> {
+    self.parse_ident().map(ast::Expr::Ident)
   }
 }
