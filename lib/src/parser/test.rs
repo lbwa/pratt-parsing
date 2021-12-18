@@ -1,11 +1,11 @@
-use crate::ast::{Ident, Statement as Stmt};
+use crate::ast::{Expr, Ident, Statement as Stmt};
 use crate::lexer;
 use crate::parser;
 
 fn check_parse_error(parser: &mut parser::Parser) {
   let errors = parser.get_errors();
 
-  if errors.len() < 1 {
+  if errors.is_empty() {
     return;
   }
 
@@ -51,4 +51,18 @@ fn return_statements() {
   check_parse_error(&mut parser);
 
   assert_eq!(program, vec![Stmt::Return, Stmt::Return, Stmt::Return])
+}
+
+#[test]
+fn ident_expr() {
+  let input = "foobar;";
+
+  let mut parser = parser::new(lexer::new(input));
+  let program = parser.parse();
+  check_parse_error(&mut parser);
+
+  assert_eq!(
+    program,
+    vec![Stmt::Expr(Expr::Ident(Ident("foobar".to_string())))]
+  );
 }
