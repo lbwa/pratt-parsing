@@ -7,6 +7,15 @@ use crate::lexer::Lexer;
 use crate::token::Token;
 use error::*;
 
+/// The parsing approach is called Top Down Operator Precedence Parsing, or
+/// Pratt parsing, was invented as an alternative to parsers based on
+/// context-free grammars and Backus-Naur-Form.
+///
+/// And That is also the main difference: instead of associating parsing
+/// functions with grammar rules (defined in BNF or EBNF), Pratt associates
+/// these functions (called "semantic code") with single token types. A crucial
+/// part of this idea is that each token type can have **2** parsing functions
+/// associated with it, depending on the token's position - infix or prefix.
 pub struct Parser<'a> {
   /// An instance of the lexer, on which we repeatedly call next_token() to get
   /// the next token in the input.
