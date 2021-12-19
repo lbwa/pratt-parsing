@@ -30,8 +30,19 @@ pub enum Precedence {
   Index,
 }
 
+/// A literal is an expression consisting of a single token, rather than a
+/// sequence of tokens, that immediately and directly denotes the value it
+/// evaluates to, rather than referring to it by name or some other evaluation
+/// rule.
+#[derive(PartialEq, Debug, Clone)]
+pub enum Literal {
+  Int(i64),
+}
+
 #[derive(PartialEq, Debug, Clone)]
 pub enum Expr {
-  /// Identifier type in an expression
   Ident(super::Ident),
+  /// Literal expression directly describes a number, character, string or
+  /// boolean value.
+  Literal(super::Literal),
 }
