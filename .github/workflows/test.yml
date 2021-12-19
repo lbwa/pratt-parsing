@@ -1,6 +1,10 @@
 name: test cases
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   build:
@@ -73,4 +77,4 @@ jobs:
         run: cargo build --release --locked
 
       - name: Run cargo test
-        run: cargo test --locked
+        run: cargo test --locked --verbose
