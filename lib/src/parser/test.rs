@@ -1,4 +1,4 @@
-use crate::ast::{Expr, Ident, Literal, Statement as Stmt};
+use crate::ast::{Expr, Ident, Literal, Prefix, Statement as Stmt};
 use crate::lexer;
 use crate::parser;
 
@@ -76,4 +76,39 @@ fn integer_literal_expr() {
   check_parse_error(&mut parser);
 
   assert_eq!(program, vec![Stmt::Expr(Expr::Literal(Literal::Int(5)))]);
+}
+
+#[test]
+fn prefix_expr() {
+  let cases = vec![
+    (
+      "!5;",
+      vec![Stmt::Expr(Expr::Prefix(
+        Prefix::Bang,
+        Box::new(Expr::Literal(Literal::Int(5))),
+      ))],
+    ),
+    (
+      "+15;",
+      vec![Stmt::Expr(Expr::Prefix(
+        Prefix::Plus,
+        Box::new(Expr::Literal(Literal::Int(15))),
+      ))],
+    ),
+    (
+      "-15;",
+      vec![Stmt::Expr(Expr::Prefix(
+        Prefix::Minus,
+        Box::new(Expr::Literal(Literal::Int(15))),
+      ))],
+    ),
+  ];
+
+  for (input, expected) in cases {
+    let mut parser = parser::new(lexer::new(input));
+    let program = parser.parse();
+    check_parse_error(&mut parser);
+
+    assert_eq!(program, expected)
+  }
 }

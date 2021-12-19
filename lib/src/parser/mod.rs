@@ -31,24 +31,30 @@ pub struct Parser<'a> {
 trait ParseToken {
   /// It' s used to move pointer to next token, and usually work with `self.parse_*` methods.
   fn move_to_next_tok(&mut self);
+  fn error_next_token(&mut self, tok: Token);
+
   fn expect_next_is(&mut self, tok: Token) -> bool;
   fn current_token_is(&self, tok: Token) -> bool;
   fn next_token_is(&self, tok: &Token) -> bool;
-  fn next_token_error(&mut self, tok: Token);
+
   fn parse_ident(&self) -> Option<ast::Ident>;
 }
 
 trait ParseStmt {
   fn parse_stmt(&mut self) -> Option<ast::Statement>;
+
   fn parse_let_stmt(&mut self) -> Option<ast::Statement>;
   fn parse_return_stmt(&mut self) -> Option<ast::Statement>;
   fn parse_expr_stmt(&mut self) -> Option<ast::Statement>;
 }
 
 trait ParseExpr {
-  fn parse_expr(&self, precedence: ast::Precedence) -> Option<ast::Expr>;
+  fn parse_expr(&mut self, precedence: ast::Precedence) -> Option<ast::Expr>;
+  fn error_no_prefix_parser(&mut self);
+
   fn parse_ident_expr(&self) -> Option<ast::Expr>;
   fn parse_int_expr(&self) -> Option<ast::Expr>;
+  fn parse_prefix_expr(&mut self) -> Option<ast::Expr>;
 }
 
 pub fn new(lexer: Lexer<'_>) -> Parser {
@@ -97,7 +103,7 @@ impl ParseToken for Parser<'_> {
       self.move_to_next_tok();
       true
     } else {
-      self.next_token_error(tok);
+      self.error_next_token(tok);
       false
     }
   }
@@ -110,7 +116,7 @@ impl ParseToken for Parser<'_> {
     self.next_token == *tok
   }
 
-  fn next_token_error(&mut self, tok: Token) {
+  fn error_next_token(&mut self, tok: Token) {
     self.errors.push(ParseError::new(
       ParseErrorKind::UnexpectedToken,
       format!(
@@ -144,7 +150,7 @@ impl ParseStmt for Parser<'_> {
       // wildcard matching.
       Token::Ident(_) => self.move_to_next_tok(),
       _ => {
-        self.next_token_error(Token::Ident(String::from("<Identifier literal>")));
+        self.error_next_token(Token::Ident(String::from("<Identifier literal>")));
         return None;
       }
     };
@@ -189,13 +195,27 @@ impl ParseStmt for Parser<'_> {
 }
 
 impl ParseExpr for Parser<'_> {
-  fn parse_expr(&self, _precedence: ast::Precedence) -> Option<ast::Expr> {
+  fn parse_expr(&mut self, _precedence: ast::Precedence) -> Option<ast::Expr> {
     match self.current_token {
       Token::Ident(_) => self.parse_ident_expr(),
       Token::Int(_) => self.parse_int_expr(),
-      // unexpected token type
-      _ => None,
+      Token::Minus | Token::Plus | Token::Bang => self.parse_prefix_expr(),
+      _ => {
+        // unexpected token type
+        self.error_no_prefix_parser();
+        None
+      }
     }
+  }
+
+  fn error_no_prefix_parser(&mut self) {
+    self.errors.push(ParseError::new(
+      ParseErrorKind::UnexpectedToken,
+      format!(
+        "no prefix parse function for {:?} found",
+        self.current_token
+      ),
+    ))
   }
 
   fn parse_ident_expr(&self) -> Option<ast::Expr> {
@@ -207,5 +227,20 @@ impl ParseExpr for Parser<'_> {
       Token::Int(literal) => Some(ast::Expr::Literal(ast::Literal::Int(literal))),
       _ => None,
     }
+  }
+
+  fn parse_prefix_expr(&mut self) -> Option<ast::Expr> {
+    let prefix = match self.current_token {
+      Token::Bang => ast::Prefix::Bang,
+      Token::Minus => ast::Prefix::Minus,
+      Token::Plus => ast::Prefix::Plus,
+      _ => return None,
+    };
+
+    self.move_to_next_tok();
+
+    self
+      .parse_expr(ast::Precedence::Prefix)
+      .map(|expr| ast::Expr::Prefix(prefix, Box::new(expr)))
   }
 }
