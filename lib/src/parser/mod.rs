@@ -48,6 +48,7 @@ trait ParseStmt {
 trait ParseExpr {
   fn parse_expr(&self, precedence: ast::Precedence) -> Option<ast::Expr>;
   fn parse_ident_expr(&self) -> Option<ast::Expr>;
+  fn parse_int_expr(&self) -> Option<ast::Expr>;
 }
 
 pub fn new(lexer: Lexer<'_>) -> Parser {
@@ -191,6 +192,7 @@ impl ParseExpr for Parser<'_> {
   fn parse_expr(&self, _precedence: ast::Precedence) -> Option<ast::Expr> {
     match self.current_token {
       Token::Ident(_) => self.parse_ident_expr(),
+      Token::Int(_) => self.parse_int_expr(),
       // unexpected token type
       _ => None,
     }
@@ -198,5 +200,12 @@ impl ParseExpr for Parser<'_> {
 
   fn parse_ident_expr(&self) -> Option<ast::Expr> {
     self.parse_ident().map(ast::Expr::Ident)
+  }
+
+  fn parse_int_expr(&self) -> Option<ast::Expr> {
+    match self.current_token {
+      Token::Int(literal) => Some(ast::Expr::Literal(ast::Literal::Int(literal))),
+      _ => None,
+    }
   }
 }

@@ -14,5 +14,7 @@ pub enum Statement {
   /// ```
   /// As we see, Expr that is a kind variant of Statement, which means we can
   /// add it to the Statements slice of ast::Program
+  ///
+  /// [Similar implementation in rust: expression statement](https://doc.rust-lang.org/reference/statements.html#expression-statements)
   Expr(expr::Expr),
 }

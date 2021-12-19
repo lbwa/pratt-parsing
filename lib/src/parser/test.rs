@@ -1,4 +1,4 @@
-use crate::ast::{Expr, Ident, Statement as Stmt};
+use crate::ast::{Expr, Ident, Literal, Statement as Stmt};
 use crate::lexer;
 use crate::parser;
 
@@ -65,4 +65,15 @@ fn ident_expr() {
     program,
     vec![Stmt::Expr(Expr::Ident(Ident("foobar".to_string())))]
   );
+}
+
+#[test]
+fn integer_literal_expr() {
+  let input = "5;";
+
+  let mut parser = parser::new(lexer::new(input));
+  let program = parser.parse();
+  check_parse_error(&mut parser);
+
+  assert_eq!(program, vec![Stmt::Expr(Expr::Literal(Literal::Int(5)))]);
 }
