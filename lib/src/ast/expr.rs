@@ -1,6 +1,26 @@
-/// An operator "in front of" its operand
+use std::fmt;
+
+/// An operator "in front of" its operand. Any expression can follow a prefix
+/// operator as operand.
+///
+/// `<prefix operator><expression>`
 #[derive(PartialEq, Debug, Clone)]
-pub enum Prefix {}
+pub enum Prefix {
+  Bang,
+  Minus,
+  Plus,
+}
+
+impl fmt::Display for Prefix {
+  fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+    let literal = match *self {
+      Prefix::Plus => "+",
+      Prefix::Minus => "-",
+      Prefix::Bang => "!",
+    };
+    write!(formatter, "{}", literal)
+  }
+}
 
 /// An infix operator sits between its operands, and appear in binary
 /// expressions - where the operator has two operands.
@@ -45,4 +65,6 @@ pub enum Expr {
   /// Literal expression directly describes a number, character, string or
   /// boolean value.
   Literal(super::Literal),
+  /// `<prefix operator><expression>`
+  Prefix(Prefix, Box<Expr>),
 }
