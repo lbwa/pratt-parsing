@@ -21,11 +21,17 @@ pub enum Token {
   /// `/`
   Slash,
   /// `<`
-  Lt,
+  LessThan,
   /// `>`
-  Gt,
-  Eq,
-  NotEq,
+  GreaterThan,
+  /// `=`
+  Equal,
+  /// `≠`
+  NotEqual,
+  /// `≤`
+  LessThanEqual,
+  /// `≥`
+  GreaterThanEqual,
 
   // delimiters
   /// ,

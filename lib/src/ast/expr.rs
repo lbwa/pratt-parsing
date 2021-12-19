@@ -25,22 +25,51 @@ impl fmt::Display for Prefix {
 /// An infix operator sits between its operands, and appear in binary
 /// expressions - where the operator has two operands.
 #[derive(PartialEq, Debug, Clone)]
-pub enum Infix {}
+pub enum Infix {
+  Plus,
+  Minus,
+  Multiply,
+  Divide,
+  GreaterThan,
+  LessThan,
+  Equal,
+  NotEqual,
+  GreaterThanEqual,
+  LessThanEqual,
+}
+
+impl fmt::Display for Infix {
+  fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+    let literal = match *self {
+      Infix::Plus => "+",
+      Infix::Minus => "-",
+      Infix::Multiply => "×",
+      Infix::Divide => "÷",
+      Infix::GreaterThan => ">",
+      Infix::LessThan => "<",
+      Infix::Equal => "=",
+      Infix::NotEqual => "≠",
+      Infix::GreaterThanEqual => "≥",
+      Infix::LessThanEqual => "≤",
+    };
+    write!(formatter, "{}", literal)
+  }
+}
 
 /// An operator "after" its operand
 #[derive(PartialEq, Debug, Clone)]
 pub enum Postfix {}
 
-#[derive(PartialEq, Debug, Clone)]
+#[derive(PartialEq, PartialOrd, Debug, Clone)]
 pub enum Precedence {
   Lowest,
   /// ==
   Equals,
-  /// > or <
+  /// `>` or `<`
   LessGreater,
-  /// +
+  /// `+` or `-`
   Sum,
-  /// *
+  /// `*` or `/`
   Product,
   /// -a or !a
   Prefix,
@@ -67,4 +96,6 @@ pub enum Expr {
   Literal(super::Literal),
   /// `<prefix operator><expression>`
   Prefix(Prefix, Box<Expr>),
+  /// `<expression><infix operator><expression>`
+  Infix(Box<Expr>, Infix, Box<Expr>),
 }

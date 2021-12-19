@@ -55,6 +55,13 @@ trait ParseExpr {
   fn parse_ident_expr(&self) -> Option<ast::Expr>;
   fn parse_int_expr(&self) -> Option<ast::Expr>;
   fn parse_prefix_expr(&mut self) -> Option<ast::Expr>;
+  fn parse_infix_expr(&mut self, left_expr: ast::Expr) -> Option<ast::Expr>;
+}
+
+trait Precedence {
+  fn token_to_precedence(&self, tok: &Token) -> ast::Precedence;
+  fn current_token_precedence(&self) -> ast::Precedence;
+  fn next_token_precedence(&self) -> ast::Precedence;
 }
 
 pub fn new(lexer: Lexer<'_>) -> Parser {
@@ -195,8 +202,8 @@ impl ParseStmt for Parser<'_> {
 }
 
 impl ParseExpr for Parser<'_> {
-  fn parse_expr(&mut self, _precedence: ast::Precedence) -> Option<ast::Expr> {
-    match self.current_token {
+  fn parse_expr(&mut self, precedence: ast::Precedence) -> Option<ast::Expr> {
+    let mut left_expr = match self.current_token {
       Token::Ident(_) => self.parse_ident_expr(),
       Token::Int(_) => self.parse_int_expr(),
       Token::Minus | Token::Plus | Token::Bang => self.parse_prefix_expr(),
@@ -205,7 +212,28 @@ impl ParseExpr for Parser<'_> {
         self.error_no_prefix_parser();
         None
       }
+    };
+
+    while !self.next_token_is(&Token::Semicolon) && precedence < self.next_token_precedence() {
+      match self.next_token {
+        Token::Plus
+        | Token::Minus
+        | Token::Slash
+        | Token::Asterisk
+        | Token::Equal
+        | Token::NotEqual
+        | Token::LessThan
+        | Token::LessThanEqual
+        | Token::GreaterThan
+        | Token::GreaterThanEqual => {
+          self.move_to_next_tok();
+          left_expr = self.parse_infix_expr(left_expr.unwrap());
+        }
+        _ => return left_expr,
+      };
     }
+
+    left_expr
   }
 
   fn error_no_prefix_parser(&mut self) {
@@ -242,5 +270,48 @@ impl ParseExpr for Parser<'_> {
     self
       .parse_expr(ast::Precedence::Prefix)
       .map(|expr| ast::Expr::Prefix(prefix, Box::new(expr)))
+  }
+
+  fn parse_infix_expr(&mut self, left_expr: ast::Expr) -> Option<ast::Expr> {
+    let infix = match self.current_token {
+      Token::Plus => ast::Infix::Plus,
+      Token::Minus => ast::Infix::Minus,
+      Token::Slash => ast::Infix::Divide,
+      Token::Asterisk => ast::Infix::Multiply,
+      Token::Equal => ast::Infix::Equal,
+      Token::NotEqual => ast::Infix::NotEqual,
+      Token::LessThan => ast::Infix::LessThan,
+      Token::LessThanEqual => ast::Infix::LessThanEqual,
+      Token::GreaterThan => ast::Infix::GreaterThan,
+      Token::GreaterThanEqual => ast::Infix::GreaterThanEqual,
+      _ => return None,
+    };
+
+    let precedence = self.current_token_precedence();
+    self.move_to_next_tok();
+    self
+      .parse_expr(precedence)
+      .map(|expr| ast::Expr::Infix(Box::new(left_expr), infix, Box::new(expr)))
+  }
+}
+
+impl Precedence for Parser<'_> {
+  fn token_to_precedence(&self, tok: &Token) -> ast::Precedence {
+    match tok {
+      Token::Equal | Token::NotEqual => ast::Precedence::Equals,
+      Token::LessThan | Token::GreaterThan => ast::Precedence::LessGreater,
+      Token::Plus | Token::Minus => ast::Precedence::Sum,
+      Token::Slash | Token::Asterisk => ast::Precedence::Product,
+
+      _ => ast::Precedence::Lowest,
+    }
+  }
+
+  fn current_token_precedence(&self) -> ast::Precedence {
+    self.token_to_precedence(&self.current_token)
+  }
+
+  fn next_token_precedence(&self) -> ast::Precedence {
+    self.token_to_precedence(&self.next_token)
   }
 }

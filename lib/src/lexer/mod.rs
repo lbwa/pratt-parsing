@@ -92,7 +92,7 @@ impl Lexer<'_> {
       b'=' => {
         if self.peek_char() == b'=' {
           self.read_char();
-          Token::Eq
+          Token::Equal
         } else {
           Token::Assign
         }
@@ -102,15 +102,15 @@ impl Lexer<'_> {
       b'!' => {
         if self.peek_char() == b'=' {
           self.read_char();
-          Token::NotEq
+          Token::NotEqual
         } else {
           Token::Bang
         }
       }
       b'/' => Token::Slash,
       b'*' => Token::Asterisk,
-      b'<' => Token::Lt,
-      b'>' => Token::Gt,
+      b'<' => Token::LessThan,
+      b'>' => Token::GreaterThan,
 
       // delimiters
       b';' => Token::Semicolon,

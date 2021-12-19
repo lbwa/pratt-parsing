@@ -1,4 +1,4 @@
-use crate::ast::{Expr, Ident, Literal, Prefix, Statement as Stmt};
+use crate::ast::{Expr, Ident, Infix, Literal, Prefix, Statement as Stmt};
 use crate::lexer;
 use crate::parser;
 
@@ -110,5 +110,170 @@ fn prefix_expr() {
     check_parse_error(&mut parser);
 
     assert_eq!(program, expected)
+  }
+}
+
+#[test]
+fn infix_expr() {
+  let cases = vec![
+    (
+      "5 + 5",
+      vec![Stmt::Expr(Expr::Infix(
+        Box::new(Expr::Literal(Literal::Int(5))),
+        Infix::Plus,
+        Box::new(Expr::Literal(Literal::Int(5))),
+      ))],
+    ),
+    (
+      "5 - 5",
+      vec![Stmt::Expr(Expr::Infix(
+        Box::new(Expr::Literal(Literal::Int(5))),
+        Infix::Minus,
+        Box::new(Expr::Literal(Literal::Int(5))),
+      ))],
+    ),
+    (
+      "3 + 4 * 5 == 3 * 1 + 4 * 5",
+      vec![Stmt::Expr(Expr::Infix(
+        Box::new(Expr::Infix(
+          Box::new(Expr::Literal(Literal::Int(3))),
+          Infix::Plus,
+          Box::new(Expr::Infix(
+            Box::new(Expr::Literal(Literal::Int(4))),
+            Infix::Multiply,
+            Box::new(Expr::Literal(Literal::Int(5))),
+          )),
+        )),
+        Infix::Equal,
+        Box::new(Expr::Infix(
+          Box::new(Expr::Infix(
+            Box::new(Expr::Literal(Literal::Int(3))),
+            Infix::Multiply,
+            Box::new(Expr::Literal(Literal::Int(1))),
+          )),
+          Infix::Plus,
+          Box::new(Expr::Infix(
+            Box::new(Expr::Literal(Literal::Int(4))),
+            Infix::Multiply,
+            Box::new(Expr::Literal(Literal::Int(5))),
+          )),
+        )),
+      ))],
+    ),
+    (
+      "3 + 4; -5 * 5",
+      vec![
+        Stmt::Expr(Expr::Infix(
+          Box::new(Expr::Literal(Literal::Int(3))),
+          Infix::Plus,
+          Box::new(Expr::Literal(Literal::Int(4))),
+        )),
+        Stmt::Expr(Expr::Infix(
+          Box::new(Expr::Prefix(
+            Prefix::Minus,
+            Box::new(Expr::Literal(Literal::Int(5))),
+          )),
+          Infix::Multiply,
+          Box::new(Expr::Literal(Literal::Int(5))),
+        )),
+      ],
+    ),
+    (
+      "5 > 4 == 3 < 4",
+      vec![Stmt::Expr(Expr::Infix(
+        Box::new(Expr::Infix(
+          Box::new(Expr::Literal(Literal::Int(5))),
+          Infix::GreaterThan,
+          Box::new(Expr::Literal(Literal::Int(4))),
+        )),
+        Infix::Equal,
+        Box::new(Expr::Infix(
+          Box::new(Expr::Literal(Literal::Int(3))),
+          Infix::LessThan,
+          Box::new(Expr::Literal(Literal::Int(4))),
+        )),
+      ))],
+    ),
+    (
+      "5 < 4 != 3 > 4",
+      vec![Stmt::Expr(Expr::Infix(
+        Box::new(Expr::Infix(
+          Box::new(Expr::Literal(Literal::Int(5))),
+          Infix::LessThan,
+          Box::new(Expr::Literal(Literal::Int(4))),
+        )),
+        Infix::NotEqual,
+        Box::new(Expr::Infix(
+          Box::new(Expr::Literal(Literal::Int(3))),
+          Infix::GreaterThan,
+          Box::new(Expr::Literal(Literal::Int(4))),
+        )),
+      ))],
+    ),
+    (
+      "-a * b",
+      vec![Stmt::Expr(Expr::Infix(
+        Box::new(Expr::Prefix(
+          Prefix::Minus,
+          Box::new(Expr::Ident(Ident("a".to_owned()))),
+        )),
+        Infix::Multiply,
+        Box::new(Expr::Ident(Ident("b".to_owned()))),
+      ))],
+    ),
+    (
+      "!-a",
+      vec![Stmt::Expr(Expr::Prefix(
+        Prefix::Bang,
+        Box::new(Expr::Prefix(
+          Prefix::Minus,
+          Box::new(Expr::Ident(Ident("a".to_owned()))),
+        )),
+      ))],
+    ),
+    (
+      "a + b - c",
+      vec![Stmt::Expr(Expr::Infix(
+        Box::new(Expr::Infix(
+          Box::new(Expr::Ident(Ident("a".to_owned()))),
+          Infix::Plus,
+          Box::new(Expr::Ident(Ident("b".to_owned()))),
+        )),
+        Infix::Minus,
+        Box::new(Expr::Ident(Ident("c".to_owned()))),
+      ))],
+    ),
+    (
+      "a + b * c + d / e - f",
+      vec![Stmt::Expr(Expr::Infix(
+        Box::new(Expr::Infix(
+          Box::new(Expr::Infix(
+            Box::new(Expr::Ident(Ident("a".to_owned()))),
+            Infix::Plus,
+            Box::new(Expr::Infix(
+              Box::new(Expr::Ident(Ident("b".to_owned()))),
+              Infix::Multiply,
+              Box::new(Expr::Ident(Ident("c".to_owned()))),
+            )),
+          )),
+          Infix::Plus,
+          Box::new(Expr::Infix(
+            Box::new(Expr::Ident(Ident("d".to_owned()))),
+            Infix::Divide,
+            Box::new(Expr::Ident(Ident("e".to_owned()))),
+          )),
+        )),
+        Infix::Minus,
+        Box::new(Expr::Ident(Ident("f".to_owned()))),
+      ))],
+    ),
+  ];
+
+  for (input, expected) in cases {
+    let mut parser = parser::new(lexer::new(input));
+    let program = parser.parse();
+    check_parse_error(&mut parser);
+
+    assert_eq!(program, expected);
   }
 }
