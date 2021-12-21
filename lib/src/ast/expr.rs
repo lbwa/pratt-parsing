@@ -11,6 +11,16 @@ pub enum Prefix {
   Plus,
 }
 
+/// A literal is an expression consisting of a single token, rather than a
+/// sequence of tokens, that immediately and directly denotes the value it
+/// evaluates to, rather than referring to it by name or some other evaluation
+/// rule.
+#[derive(PartialEq, Debug, Clone)]
+pub enum Literal {
+  Int(i64),
+  Bool(bool),
+}
+
 impl fmt::Display for Prefix {
   fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
     let literal = match *self {
@@ -77,15 +87,6 @@ pub enum Precedence {
   Call,
   /// slice[index]
   Index,
-}
-
-/// A literal is an expression consisting of a single token, rather than a
-/// sequence of tokens, that immediately and directly denotes the value it
-/// evaluates to, rather than referring to it by name or some other evaluation
-/// rule.
-#[derive(PartialEq, Debug, Clone)]
-pub enum Literal {
-  Int(i64),
 }
 
 #[derive(PartialEq, Debug, Clone)]

@@ -87,7 +87,7 @@ fn tokenize() {
     Token::LBrace,
     //
     Token::Return,
-    Token::True,
+    Token::Bool(true),
     Token::Semicolon,
     //
     Token::RBrace,
@@ -95,7 +95,7 @@ fn tokenize() {
     Token::LBrace,
     //
     Token::Return,
-    Token::False,
+    Token::Bool(false),
     Token::Semicolon,
     //
     Token::RBrace,

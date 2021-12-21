@@ -13,7 +13,7 @@ fn check_parse_error(parser: &mut parser::Parser) {
   for error in errors {
     println!("parser error: {}", error);
   }
-  panic!("Check parser error failed.")
+  panic!("Check parser errors.")
 }
 
 #[test]
@@ -76,6 +76,39 @@ fn integer_literal_expr() {
   check_parse_error(&mut parser);
 
   assert_eq!(program, vec![Stmt::Expr(Expr::Literal(Literal::Int(5)))]);
+}
+
+#[test]
+fn bool_literal_expr() {
+  let cases = vec![
+    (
+      "true;false",
+      vec![
+        Stmt::Expr(Expr::Literal(Literal::Bool(true))),
+        Stmt::Expr(Expr::Literal(Literal::Bool(false))),
+      ],
+    ),
+    (
+      "3 > 5 == false",
+      vec![Stmt::Expr(Expr::Infix(
+        Box::new(Expr::Infix(
+          Box::new(Expr::Literal(Literal::Int(3))),
+          Infix::GreaterThan,
+          Box::new(Expr::Literal(Literal::Int(5))),
+        )),
+        Infix::Equal,
+        Box::new(Expr::Literal(Literal::Bool(false))),
+      ))],
+    ),
+  ];
+
+  for (input, expected) in cases {
+    let mut parser = parser::new(lexer::new(input));
+    let program = parser.parse();
+    check_parse_error(&mut parser);
+
+    assert_eq!(program, expected);
+  }
 }
 
 #[test]

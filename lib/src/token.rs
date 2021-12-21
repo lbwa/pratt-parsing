@@ -6,6 +6,11 @@ pub enum Token {
   // identifier + literal
   Ident(String),
   Int(i64),
+  Bool(bool),
+
+  // statements
+  If,
+  Else,
 
   // operators
   /// `=`
@@ -50,10 +55,6 @@ pub enum Token {
   // reserved words
   Function,
   Let,
-  True,
-  False,
-  If,
-  Else,
   Return,
 }
 

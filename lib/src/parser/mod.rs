@@ -54,6 +54,7 @@ trait ParseExpr {
 
   fn parse_ident_expr(&self) -> Option<ast::Expr>;
   fn parse_int_expr(&self) -> Option<ast::Expr>;
+  fn parse_bool_expr(&self) -> Option<ast::Expr>;
   fn parse_prefix_expr(&mut self) -> Option<ast::Expr>;
   fn parse_infix_expr(&mut self, left_expr: ast::Expr) -> Option<ast::Expr>;
 }
@@ -207,6 +208,7 @@ impl ParseExpr for Parser<'_> {
       Token::Ident(_) => self.parse_ident_expr(),
       Token::Int(_) => self.parse_int_expr(),
       Token::Minus | Token::Plus | Token::Bang => self.parse_prefix_expr(),
+      Token::Bool(_) => self.parse_bool_expr(),
       _ => {
         // unexpected token type
         self.error_no_prefix_parser();
@@ -253,6 +255,13 @@ impl ParseExpr for Parser<'_> {
   fn parse_int_expr(&self) -> Option<ast::Expr> {
     match self.current_token {
       Token::Int(literal) => Some(ast::Expr::Literal(ast::Literal::Int(literal))),
+      _ => None,
+    }
+  }
+
+  fn parse_bool_expr(&self) -> Option<ast::Expr> {
+    match self.current_token {
+      Token::Bool(literal) => Some(ast::Expr::Literal(ast::Literal::Bool(literal == true))),
       _ => None,
     }
   }
