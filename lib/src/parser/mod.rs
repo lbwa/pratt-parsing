@@ -21,10 +21,10 @@ pub struct Parser<'a> {
   /// the next token in the input.
   lexer: Lexer<'a>,
   // The last of tokens we have read.
-  current_token: Token,
+  current_token: Token<'a>,
   /// next token, to decide whether we are at the end of the line or if we are
   /// at just the start of an arithmetic expression.
-  next_token: Token,
+  next_token: Token<'a>,
   errors: ParseErrors,
 }
 
@@ -136,7 +136,7 @@ impl ParseToken for Parser<'_> {
 
   fn parse_ident(&self) -> Option<ast::Ident> {
     match &self.current_token {
-      Token::Ident(ident) => Some(ast::Ident(ident.clone())),
+      Token::Ident(ident) => Some(ast::Ident((*ident).to_owned())),
       _ => None,
     }
   }
@@ -158,7 +158,7 @@ impl ParseStmt for Parser<'_> {
       // wildcard matching.
       Token::Ident(_) => self.move_to_next_tok(),
       _ => {
-        self.error_next_token(Token::Ident(String::from("<Identifier literal>")));
+        self.error_next_token(Token::Ident("<Identifier literal>"));
         return None;
       }
     };

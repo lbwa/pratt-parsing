@@ -30,7 +30,7 @@ pub fn new(input: &str) -> Lexer {
   lexer
 }
 
-impl Lexer<'_> {
+impl<'a> Lexer<'a> {
   /// similar to `self.read_char`, except that it doesn't increment `self.pos`
   /// and `self.read_pos`. We only want to "peek" ahead in the input and not
   /// move around it.
@@ -52,7 +52,7 @@ impl Lexer<'_> {
     self.read_pos += 1;
   }
 
-  fn read_identifier(&mut self) -> Token {
+  fn read_identifier(&mut self) -> Token<'a> {
     let from = self.pos;
 
     while let b'a'..=b'z' | b'A'..=b'Z' | b'_' = self.ch {
@@ -69,11 +69,11 @@ impl Lexer<'_> {
       "if" => Token::If,
       "else" => Token::Else,
       "return" => Token::Return,
-      _ => Token::Ident(String::from(literal)),
+      _ => Token::Ident(literal),
     }
   }
 
-  fn read_number(&mut self) -> Token {
+  fn read_number(&mut self) -> Token<'a> {
     let from = self.pos;
 
     while let b'0'..=b'9' = self.ch {
@@ -85,7 +85,7 @@ impl Lexer<'_> {
     }
   }
 
-  pub fn move_to_next_tok(&mut self) -> token::Token {
+  pub fn move_to_next_tok(&mut self) -> token::Token<'a> {
     self.skip_whitespace();
     let tok = match self.ch {
       // operators
