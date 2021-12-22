@@ -28,7 +28,7 @@ pub struct Parser<'a> {
   errors: ParseErrors,
 }
 
-trait ParseToken {
+trait ParseToken<'a> {
   /// It' s used to move pointer to next token, and usually work with `self.parse_*` methods.
   fn move_to_next_tok(&mut self);
   fn error_next_token(&mut self, tok: Token);
@@ -37,26 +37,26 @@ trait ParseToken {
   fn current_token_is(&self, tok: Token) -> bool;
   fn next_token_is(&self, tok: &Token) -> bool;
 
-  fn parse_ident(&self) -> Option<ast::Ident>;
+  fn parse_ident(&self) -> Option<ast::Ident<'a>>;
 }
 
-trait ParseStmt {
-  fn parse_stmt(&mut self) -> Option<ast::Statement>;
+trait ParseStmt<'a> {
+  fn parse_stmt(&mut self) -> Option<ast::Statement<'a>>;
 
-  fn parse_let_stmt(&mut self) -> Option<ast::Statement>;
-  fn parse_return_stmt(&mut self) -> Option<ast::Statement>;
-  fn parse_expr_stmt(&mut self) -> Option<ast::Statement>;
+  fn parse_let_stmt(&mut self) -> Option<ast::Statement<'a>>;
+  fn parse_return_stmt(&mut self) -> Option<ast::Statement<'a>>;
+  fn parse_expr_stmt(&mut self) -> Option<ast::Statement<'a>>;
 }
 
-trait ParseExpr {
-  fn parse_expr(&mut self, precedence: ast::Precedence) -> Option<ast::Expr>;
+trait ParseExpr<'a> {
+  fn parse_expr(&mut self, precedence: ast::Precedence) -> Option<ast::Expr<'a>>;
   fn error_no_prefix_parser(&mut self);
 
-  fn parse_ident_expr(&self) -> Option<ast::Expr>;
-  fn parse_int_expr(&self) -> Option<ast::Expr>;
-  fn parse_bool_expr(&self) -> Option<ast::Expr>;
-  fn parse_prefix_expr(&mut self) -> Option<ast::Expr>;
-  fn parse_infix_expr(&mut self, left_expr: ast::Expr) -> Option<ast::Expr>;
+  fn parse_ident_expr(&self) -> Option<ast::Expr<'a>>;
+  fn parse_int_expr(&self) -> Option<ast::Expr<'a>>;
+  fn parse_bool_expr(&self) -> Option<ast::Expr<'a>>;
+  fn parse_prefix_expr(&mut self) -> Option<ast::Expr<'a>>;
+  fn parse_infix_expr(&mut self, left_expr: ast::Expr<'a>) -> Option<ast::Expr<'a>>;
 }
 
 trait Precedence {
@@ -81,10 +81,10 @@ pub fn new(lexer: Lexer<'_>) -> Parser {
   parser
 }
 
-impl Parser<'_> {
+impl<'a> Parser<'a> {
   /// We're using a loop to parse statements until we encounter a Eof character
-  pub fn parse(&mut self) -> ast::Program {
-    let mut program: ast::Program = vec![];
+  pub fn parse(&mut self) -> ast::Program<'a> {
+    let mut program: ast::Program<'a> = vec![];
 
     while !self.current_token_is(Token::Eof) {
       if let Some(stmt) = self.parse_stmt() {
@@ -100,7 +100,7 @@ impl Parser<'_> {
   }
 }
 
-impl ParseToken for Parser<'_> {
+impl<'a> ParseToken<'a> for Parser<'a> {
   fn move_to_next_tok(&mut self) {
     self.current_token = self.next_token.clone();
     self.next_token = self.lexer.move_to_next_tok();
@@ -134,16 +134,16 @@ impl ParseToken for Parser<'_> {
     ));
   }
 
-  fn parse_ident(&self) -> Option<ast::Ident> {
+  fn parse_ident(&self) -> Option<ast::Ident<'a>> {
     match &self.current_token {
-      Token::Ident(ident) => Some(ast::Ident((*ident).to_owned())),
+      Token::Ident(ident) => Some(ast::Ident(*ident)),
       _ => None,
     }
   }
 }
 
-impl ParseStmt for Parser<'_> {
-  fn parse_stmt(&mut self) -> Option<ast::Statement> {
+impl<'a> ParseStmt<'a> for Parser<'a> {
+  fn parse_stmt(&mut self) -> Option<ast::Statement<'a>> {
     match self.current_token {
       Token::Let => self.parse_let_stmt(),
       Token::Return => self.parse_return_stmt(),
@@ -151,7 +151,7 @@ impl ParseStmt for Parser<'_> {
     }
   }
 
-  fn parse_let_stmt(&mut self) -> Option<ast::Statement> {
+  fn parse_let_stmt(&mut self) -> Option<ast::Statement<'a>> {
     // This is equivalent to self.expect_next_is(Token::Ident(...))
     match &self.next_token {
       // The reason we don't call self.expect_next_is function is we need
@@ -181,7 +181,7 @@ impl ParseStmt for Parser<'_> {
     Some(ast::Statement::Let(name))
   }
 
-  fn parse_return_stmt(&mut self) -> Option<ast::Statement> {
+  fn parse_return_stmt(&mut self) -> Option<ast::Statement<'a>> {
     // TODO: we're skipping the expression until we encounter a semicolon.
     while !self.current_token_is(Token::Semicolon) {
       self.move_to_next_tok();
@@ -189,7 +189,7 @@ impl ParseStmt for Parser<'_> {
     Some(ast::Statement::Return)
   }
 
-  fn parse_expr_stmt(&mut self) -> Option<ast::Statement> {
+  fn parse_expr_stmt(&mut self) -> Option<ast::Statement<'a>> {
     if let Some(expr) = self.parse_expr(ast::Precedence::Lowest) {
       // expression semicolon is optional
       if self.next_token_is(&Token::Semicolon) {
@@ -202,8 +202,8 @@ impl ParseStmt for Parser<'_> {
   }
 }
 
-impl ParseExpr for Parser<'_> {
-  fn parse_expr(&mut self, precedence: ast::Precedence) -> Option<ast::Expr> {
+impl<'a> ParseExpr<'a> for Parser<'a> {
+  fn parse_expr(&mut self, precedence: ast::Precedence) -> Option<ast::Expr<'a>> {
     let mut left_expr = match self.current_token {
       Token::Ident(_) => self.parse_ident_expr(),
       Token::Int(_) => self.parse_int_expr(),
@@ -248,25 +248,25 @@ impl ParseExpr for Parser<'_> {
     ))
   }
 
-  fn parse_ident_expr(&self) -> Option<ast::Expr> {
+  fn parse_ident_expr(&self) -> Option<ast::Expr<'a>> {
     self.parse_ident().map(ast::Expr::Ident)
   }
 
-  fn parse_int_expr(&self) -> Option<ast::Expr> {
+  fn parse_int_expr(&self) -> Option<ast::Expr<'a>> {
     match self.current_token {
       Token::Int(literal) => Some(ast::Expr::Literal(ast::Literal::Int(literal))),
       _ => None,
     }
   }
 
-  fn parse_bool_expr(&self) -> Option<ast::Expr> {
+  fn parse_bool_expr(&self) -> Option<ast::Expr<'a>> {
     match self.current_token {
       Token::Bool(literal) => Some(ast::Expr::Literal(ast::Literal::Bool(literal == true))),
       _ => None,
     }
   }
 
-  fn parse_prefix_expr(&mut self) -> Option<ast::Expr> {
+  fn parse_prefix_expr(&mut self) -> Option<ast::Expr<'a>> {
     let prefix = match self.current_token {
       Token::Bang => ast::Prefix::Bang,
       Token::Minus => ast::Prefix::Minus,
@@ -281,7 +281,7 @@ impl ParseExpr for Parser<'_> {
       .map(|expr| ast::Expr::Prefix(prefix, Box::new(expr)))
   }
 
-  fn parse_infix_expr(&mut self, left_expr: ast::Expr) -> Option<ast::Expr> {
+  fn parse_infix_expr(&mut self, left_expr: ast::Expr<'a>) -> Option<ast::Expr<'a>> {
     let infix = match self.current_token {
       Token::Plus => ast::Infix::Plus,
       Token::Minus => ast::Infix::Minus,

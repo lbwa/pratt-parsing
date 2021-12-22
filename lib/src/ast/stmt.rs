@@ -1,8 +1,8 @@
 use super::expr;
 
 #[derive(PartialEq, Debug, Clone)]
-pub enum Statement {
-  Let(super::Ident),
+pub enum Statement<'a> {
+  Let(super::Ident<'a>),
   Return,
   /// It's a statement that consists solely of one expression. and not really
   /// a distinct statement, and only a wrapper.
@@ -16,5 +16,5 @@ pub enum Statement {
   /// add it to the Statements slice of ast::Program
   ///
   /// [Similar implementation in rust: expression statement](https://doc.rust-lang.org/reference/statements.html#expression-statements)
-  Expr(expr::Expr),
+  Expr(expr::Expr<'a>),
 }

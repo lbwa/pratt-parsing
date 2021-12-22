@@ -31,9 +31,9 @@ fn let_statements() {
   assert_eq!(
     program,
     vec![
-      Stmt::Let(Ident(String::from("x"))),
-      Stmt::Let(Ident(String::from("y"))),
-      Stmt::Let(Ident(String::from("foobar")))
+      Stmt::Let(Ident("x")),
+      Stmt::Let(Ident("y")),
+      Stmt::Let(Ident("foobar"))
     ]
   );
 }
@@ -61,10 +61,7 @@ fn ident_expr() {
   let program = parser.parse();
   check_parse_error(&mut parser);
 
-  assert_eq!(
-    program,
-    vec![Stmt::Expr(Expr::Ident(Ident("foobar".to_string())))]
-  );
+  assert_eq!(program, vec![Stmt::Expr(Expr::Ident(Ident("foobar")))]);
 }
 
 #[test]
@@ -248,10 +245,10 @@ fn infix_expr() {
       vec![Stmt::Expr(Expr::Infix(
         Box::new(Expr::Prefix(
           Prefix::Minus,
-          Box::new(Expr::Ident(Ident("a".to_owned()))),
+          Box::new(Expr::Ident(Ident("a"))),
         )),
         Infix::Multiply,
-        Box::new(Expr::Ident(Ident("b".to_owned()))),
+        Box::new(Expr::Ident(Ident("b"))),
       ))],
     ),
     (
@@ -260,7 +257,7 @@ fn infix_expr() {
         Prefix::Bang,
         Box::new(Expr::Prefix(
           Prefix::Minus,
-          Box::new(Expr::Ident(Ident("a".to_owned()))),
+          Box::new(Expr::Ident(Ident("a"))),
         )),
       ))],
     ),
@@ -268,12 +265,12 @@ fn infix_expr() {
       "a + b - c",
       vec![Stmt::Expr(Expr::Infix(
         Box::new(Expr::Infix(
-          Box::new(Expr::Ident(Ident("a".to_owned()))),
+          Box::new(Expr::Ident(Ident("a"))),
           Infix::Plus,
-          Box::new(Expr::Ident(Ident("b".to_owned()))),
+          Box::new(Expr::Ident(Ident("b"))),
         )),
         Infix::Minus,
-        Box::new(Expr::Ident(Ident("c".to_owned()))),
+        Box::new(Expr::Ident(Ident("c"))),
       ))],
     ),
     (
@@ -281,23 +278,23 @@ fn infix_expr() {
       vec![Stmt::Expr(Expr::Infix(
         Box::new(Expr::Infix(
           Box::new(Expr::Infix(
-            Box::new(Expr::Ident(Ident("a".to_owned()))),
+            Box::new(Expr::Ident(Ident("a"))),
             Infix::Plus,
             Box::new(Expr::Infix(
-              Box::new(Expr::Ident(Ident("b".to_owned()))),
+              Box::new(Expr::Ident(Ident("b"))),
               Infix::Multiply,
-              Box::new(Expr::Ident(Ident("c".to_owned()))),
+              Box::new(Expr::Ident(Ident("c"))),
             )),
           )),
           Infix::Plus,
           Box::new(Expr::Infix(
-            Box::new(Expr::Ident(Ident("d".to_owned()))),
+            Box::new(Expr::Ident(Ident("d"))),
             Infix::Divide,
-            Box::new(Expr::Ident(Ident("e".to_owned()))),
+            Box::new(Expr::Ident(Ident("e"))),
           )),
         )),
         Infix::Minus,
-        Box::new(Expr::Ident(Ident("f".to_owned()))),
+        Box::new(Expr::Ident(Ident("f"))),
       ))],
     ),
   ];

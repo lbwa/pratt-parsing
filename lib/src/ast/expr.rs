@@ -90,13 +90,13 @@ pub enum Precedence {
 }
 
 #[derive(PartialEq, Debug, Clone)]
-pub enum Expr {
-  Ident(super::Ident),
+pub enum Expr<'a> {
+  Ident(super::Ident<'a>),
   /// Literal expression directly describes a number, character, string or
   /// boolean value.
   Literal(super::Literal),
   /// `<prefix operator><expression>`
-  Prefix(Prefix, Box<Expr>),
+  Prefix(Prefix, Box<Expr<'a>>),
   /// `<expression><infix operator><expression>`
-  Infix(Box<Expr>, Infix, Box<Expr>),
+  Infix(Box<Expr<'a>>, Infix, Box<Expr<'a>>),
 }
