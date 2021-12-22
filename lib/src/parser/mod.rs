@@ -261,7 +261,7 @@ impl<'a> ParseExpr<'a> for Parser<'a> {
 
   fn parse_bool_expr(&self) -> Option<ast::Expr<'a>> {
     match self.current_token {
-      Token::Bool(literal) => Some(ast::Expr::Literal(ast::Literal::Bool(literal == true))),
+      Token::Bool(literal) => Some(ast::Expr::Literal(ast::Literal::Bool(literal))),
       _ => None,
     }
   }
