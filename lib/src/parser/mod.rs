@@ -229,7 +229,11 @@ impl<'a> ParseExpr<'a> for Parser<'a> {
         | Token::GreaterThan
         | Token::GreaterThanEqual => {
           self.move_to_next_tok();
-          left_expr = self.parse_infix_expr(left_expr.unwrap());
+          left_expr = if let Some(expr) = left_expr {
+            self.parse_infix_expr(expr)
+          } else {
+            None
+          }
         }
         _ => return left_expr,
       };
