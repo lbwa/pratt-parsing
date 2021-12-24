@@ -49,7 +49,7 @@ impl<'a> Parser<'a> {
   pub fn parse(&mut self) -> ast::Program<'a> {
     let mut program: ast::Program<'a> = vec![];
 
-    while !self.current_token_is(Token::Eof) {
+    while !self.current_token_is(&Token::Eof) {
       if let Some(stmt) = self.parse_stmt() {
         program.push(stmt);
       }
@@ -79,8 +79,8 @@ impl<'a> Parser<'a> {
     }
   }
 
-  fn current_token_is(&self, tok: Token) -> bool {
-    self.current_token == tok
+  fn current_token_is(&self, tok: &Token) -> bool {
+    self.current_token == *tok
   }
 
   fn next_token_is(&self, tok: &Token) -> bool {
@@ -146,7 +146,7 @@ impl<'a> Parser<'a> {
 
   fn parse_return_stmt(&mut self) -> Option<ast::Statement<'a>> {
     // TODO: we're skipping the expression until we encounter a semicolon.
-    while !self.current_token_is(Token::Semicolon) {
+    while !self.current_token_is(&Token::Semicolon) {
       self.move_to_next_tok();
     }
     Some(ast::Statement::Return)
@@ -172,6 +172,7 @@ impl<'a> Parser<'a> {
       Token::Int(_) => self.parse_int_expr(),
       Token::Minus | Token::Plus | Token::Bang => self.parse_prefix_expr(),
       Token::Bool(_) => self.parse_bool_expr(),
+      Token::LParen => self.parse_grouped_expr(),
       _ => {
         // unexpected token type
         self.error_no_prefix_parser();
@@ -268,6 +269,17 @@ impl<'a> Parser<'a> {
     self
       .parse_expr(precedence)
       .map(|expr| ast::Expr::Infix(Box::new(left_expr), infix, Box::new(expr)))
+  }
+
+  fn parse_grouped_expr(&mut self) -> Option<ast::Expr<'a>> {
+    self.move_to_next_tok();
+    let expr = self.parse_expr(ast::Precedence::Lowest);
+
+    if self.expect_next_is(Token::RParen) {
+      expr
+    } else {
+      None
+    }
   }
 }
 

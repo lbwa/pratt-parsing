@@ -163,6 +163,68 @@ fn infix_expr() {
       ))],
     ),
     (
+      "5 * 5",
+      vec![Stmt::Expr(Expr::Infix(
+        Box::new(Expr::Literal(Literal::Int(5))),
+        Infix::Multiply,
+        Box::new(Expr::Literal(Literal::Int(5))),
+      ))],
+    ),
+    (
+      "5 / 5",
+      vec![Stmt::Expr(Expr::Infix(
+        Box::new(Expr::Literal(Literal::Int(5))),
+        Infix::Divide,
+        Box::new(Expr::Literal(Literal::Int(5))),
+      ))],
+    ),
+    (
+      "5 > 5",
+      vec![Stmt::Expr(Expr::Infix(
+        Box::new(Expr::Literal(Literal::Int(5))),
+        Infix::GreaterThan,
+        Box::new(Expr::Literal(Literal::Int(5))),
+      ))],
+    ),
+    (
+      "5 < 5",
+      vec![Stmt::Expr(Expr::Infix(
+        Box::new(Expr::Literal(Literal::Int(5))),
+        Infix::LessThan,
+        Box::new(Expr::Literal(Literal::Int(5))),
+      ))],
+    ),
+    (
+      "5 == 5",
+      vec![Stmt::Expr(Expr::Infix(
+        Box::new(Expr::Literal(Literal::Int(5))),
+        Infix::Equal,
+        Box::new(Expr::Literal(Literal::Int(5))),
+      ))],
+    ),
+    (
+      "5 != 5",
+      vec![Stmt::Expr(Expr::Infix(
+        Box::new(Expr::Literal(Literal::Int(5))),
+        Infix::NotEqual,
+        Box::new(Expr::Literal(Literal::Int(5))),
+      ))],
+    ),
+  ];
+
+  for (input, expected) in cases {
+    let mut parser = parser::new(lexer::new(input));
+    let program = parser.parse();
+    check_parse_error(&mut parser);
+
+    assert_eq!(program, expected);
+  }
+}
+
+#[test]
+fn operator_precedence_parsing() {
+  let cases = vec![
+    (
       "3 + 4 * 5 == 3 * 1 + 4 * 5",
       vec![Stmt::Expr(Expr::Infix(
         Box::new(Expr::Infix(
@@ -295,6 +357,68 @@ fn infix_expr() {
         )),
         Infix::Minus,
         Box::new(Expr::Ident(Ident("f"))),
+      ))],
+    ),
+    (
+      "1 + (2 + 3) + 4",
+      vec![Stmt::Expr(Expr::Infix(
+        Box::new(Expr::Infix(
+          Box::new(Expr::Literal(Literal::Int(1))),
+          Infix::Plus,
+          Box::new(Expr::Infix(
+            Box::new(Expr::Literal(Literal::Int(2))),
+            Infix::Plus,
+            Box::new(Expr::Literal(Literal::Int(3))),
+          )),
+        )),
+        Infix::Plus,
+        Box::new(Expr::Literal(Literal::Int(4))),
+      ))],
+    ),
+    (
+      "(5 + 5) * 2",
+      vec![Stmt::Expr(Expr::Infix(
+        Box::new(Expr::Infix(
+          Box::new(Expr::Literal(Literal::Int(5))),
+          Infix::Plus,
+          Box::new(Expr::Literal(Literal::Int(5))),
+        )),
+        Infix::Multiply,
+        Box::new(Expr::Literal(Literal::Int(2))),
+      ))],
+    ),
+    (
+      "2 / (5 + 5)",
+      vec![Stmt::Expr(Expr::Infix(
+        Box::new(Expr::Literal(Literal::Int(2))),
+        Infix::Divide,
+        Box::new(Expr::Infix(
+          Box::new(Expr::Literal(Literal::Int(5))),
+          Infix::Plus,
+          Box::new(Expr::Literal(Literal::Int(5))),
+        )),
+      ))],
+    ),
+    (
+      "-(5 + 5)",
+      vec![Stmt::Expr(Expr::Prefix(
+        Prefix::Minus,
+        Box::new(Expr::Infix(
+          Box::new(Expr::Literal(Literal::Int(5))),
+          Infix::Plus,
+          Box::new(Expr::Literal(Literal::Int(5))),
+        )),
+      ))],
+    ),
+    (
+      "!(true == true)",
+      vec![Stmt::Expr(Expr::Prefix(
+        Prefix::Bang,
+        Box::new(Expr::Infix(
+          Box::new(Expr::Literal(Literal::Bool(true))),
+          Infix::Equal,
+          Box::new(Expr::Literal(Literal::Bool(true))),
+        )),
       ))],
     ),
   ];
