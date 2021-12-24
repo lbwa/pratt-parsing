@@ -28,43 +28,6 @@ pub struct Parser<'a> {
   errors: ParseErrors,
 }
 
-trait ParseToken<'a> {
-  /// It' s used to move pointer to next token, and usually work with `self.parse_*` methods.
-  fn move_to_next_tok(&mut self);
-  fn error_next_token(&mut self, tok: Token);
-
-  fn expect_next_is(&mut self, tok: Token) -> bool;
-  fn current_token_is(&self, tok: Token) -> bool;
-  fn next_token_is(&self, tok: &Token) -> bool;
-
-  fn parse_ident(&self) -> Option<ast::Ident<'a>>;
-}
-
-trait ParseStmt<'a> {
-  fn parse_stmt(&mut self) -> Option<ast::Statement<'a>>;
-
-  fn parse_let_stmt(&mut self) -> Option<ast::Statement<'a>>;
-  fn parse_return_stmt(&mut self) -> Option<ast::Statement<'a>>;
-  fn parse_expr_stmt(&mut self) -> Option<ast::Statement<'a>>;
-}
-
-trait ParseExpr<'a> {
-  fn parse_expr(&mut self, precedence: ast::Precedence) -> Option<ast::Expr<'a>>;
-  fn error_no_prefix_parser(&mut self);
-
-  fn parse_ident_expr(&self) -> Option<ast::Expr<'a>>;
-  fn parse_int_expr(&self) -> Option<ast::Expr<'a>>;
-  fn parse_bool_expr(&self) -> Option<ast::Expr<'a>>;
-  fn parse_prefix_expr(&mut self) -> Option<ast::Expr<'a>>;
-  fn parse_infix_expr(&mut self, left_expr: ast::Expr<'a>) -> Option<ast::Expr<'a>>;
-}
-
-trait Precedence {
-  fn token_to_precedence(&self, tok: &Token) -> ast::Precedence;
-  fn current_token_precedence(&self) -> ast::Precedence;
-  fn next_token_precedence(&self) -> ast::Precedence;
-}
-
 pub fn new(lexer: Lexer<'_>) -> Parser {
   let mut parser = Parser {
     lexer,
@@ -100,7 +63,7 @@ impl<'a> Parser<'a> {
   }
 }
 
-impl<'a> ParseToken<'a> for Parser<'a> {
+impl<'a> Parser<'a> {
   fn move_to_next_tok(&mut self) {
     self.current_token = self.next_token.clone();
     self.next_token = self.lexer.move_to_next_tok();
@@ -142,7 +105,7 @@ impl<'a> ParseToken<'a> for Parser<'a> {
   }
 }
 
-impl<'a> ParseStmt<'a> for Parser<'a> {
+impl<'a> Parser<'a> {
   fn parse_stmt(&mut self) -> Option<ast::Statement<'a>> {
     match self.current_token {
       Token::Let => self.parse_let_stmt(),
@@ -202,7 +165,7 @@ impl<'a> ParseStmt<'a> for Parser<'a> {
   }
 }
 
-impl<'a> ParseExpr<'a> for Parser<'a> {
+impl<'a> Parser<'a> {
   fn parse_expr(&mut self, precedence: ast::Precedence) -> Option<ast::Expr<'a>> {
     let mut left_expr = match self.current_token {
       Token::Ident(_) => self.parse_ident_expr(),
@@ -308,7 +271,7 @@ impl<'a> ParseExpr<'a> for Parser<'a> {
   }
 }
 
-impl Precedence for Parser<'_> {
+impl Parser<'_> {
   fn token_to_precedence(&self, tok: &Token) -> ast::Precedence {
     match tok {
       Token::Equal | Token::NotEqual => ast::Precedence::Equals,
