@@ -165,6 +165,19 @@ impl<'a> Parser<'a> {
       None
     }
   }
+
+  fn parse_block_stmt(&mut self) -> Option<ast::BlockStatement<'a>> {
+    self.move_to_next_tok();
+    let mut stmts: ast::BlockStatement<'a> = vec![];
+    while !self.current_token_is(&Token::RBrace) && !self.current_token_is(&Token::Eof) {
+      if let Some(stmt) = self.parse_stmt() {
+        stmts.push(stmt);
+      }
+      self.move_to_next_tok();
+    }
+
+    Some(stmts)
+  }
 }
 
 // expressions
@@ -176,6 +189,7 @@ impl<'a> Parser<'a> {
       Token::Minus | Token::Plus | Token::Bang => self.parse_prefix_expr(),
       Token::Bool(_) => self.parse_bool_expr(),
       Token::LParen => self.parse_grouped_expr(),
+      Token::If => self.parse_if_expr(),
       _ => {
         // unexpected token type
         self.error_no_prefix_parser();
@@ -283,6 +297,49 @@ impl<'a> Parser<'a> {
     } else {
       None
     }
+  }
+
+  fn parse_if_expr(&mut self) -> Option<ast::Expr<'a>> {
+    if !self.expect_next_is(Token::LParen) {
+      return None;
+    }
+
+    self.move_to_next_tok();
+    let condition = self.parse_expr(ast::Precedence::Lowest);
+    // https://doc.rust-lang.org/reference/expressions/operator-expr.html#the-question-mark-operator
+    condition.as_ref()?;
+
+    if !self.expect_next_is(Token::RParen) {
+      return None;
+    }
+
+    if !self.expect_next_is(Token::LBrace) {
+      return None;
+    }
+
+    let consequence = if let Some(stmt) = self.parse_block_stmt() {
+      stmt
+    } else {
+      vec![]
+    };
+
+    let mut alternative: Option<ast::BlockStatement<'a>> = None;
+    if self.next_token_is(&Token::Else) {
+      self.move_to_next_tok();
+
+      if !self.expect_next_is(Token::LBrace) {
+        self.error_next_token(Token::LBrace);
+        return None;
+      }
+
+      alternative = self.parse_block_stmt();
+    }
+
+    Some(ast::Expr::If {
+      condition: Box::new(condition.unwrap()),
+      consequence,
+      alternative,
+    })
   }
 }
 

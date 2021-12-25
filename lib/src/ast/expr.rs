@@ -1,3 +1,4 @@
+use super::BlockStatement;
 use std::fmt;
 
 /// An operator "in front of" its operand. Any expression can follow a prefix
@@ -99,4 +100,10 @@ pub enum Expr<'a> {
   Prefix(Prefix, Box<Expr<'a>>),
   /// `<expression><infix operator><expression>`
   Infix(Box<Expr<'a>>, Infix, Box<Expr<'a>>),
+  /// `if (<condition>) <consequence> else <alternative>`
+  If {
+    condition: Box<Expr<'a>>,
+    consequence: BlockStatement<'a>,
+    alternative: Option<BlockStatement<'a>>,
+  },
 }

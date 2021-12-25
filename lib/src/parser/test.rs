@@ -26,7 +26,7 @@ fn let_statements() {
 
   let mut parser = Parser::new(Lexer::new(input));
   let parser = parser.parse();
-  check_parse_error(&parser);
+  check_parse_error(parser);
 
   assert_eq!(
     parser.stmts,
@@ -48,7 +48,7 @@ fn return_statements() {
 
   let mut parser = Parser::new(Lexer::new(input));
   let parser = parser.parse();
-  check_parse_error(&parser);
+  check_parse_error(parser);
 
   assert_eq!(parser.stmts, vec![Stmt::Return, Stmt::Return, Stmt::Return])
 }
@@ -59,7 +59,7 @@ fn ident_expr() {
 
   let mut parser = Parser::new(Lexer::new(input));
   let parser = parser.parse();
-  check_parse_error(&parser);
+  check_parse_error(parser);
 
   assert_eq!(parser.stmts, vec![Stmt::Expr(Expr::Ident(Ident("foobar")))]);
 }
@@ -70,7 +70,7 @@ fn integer_literal_expr() {
 
   let mut parser = Parser::new(Lexer::new(input));
   let parser = parser.parse();
-  check_parse_error(&parser);
+  check_parse_error(parser);
 
   assert_eq!(
     parser.stmts,
@@ -105,7 +105,7 @@ fn bool_literal_expr() {
   for (input, expected) in cases {
     let mut parser = Parser::new(Lexer::new(input));
     let parser = parser.parse();
-    check_parse_error(&parser);
+    check_parse_error(parser);
 
     assert_eq!(parser.stmts, expected);
   }
@@ -140,7 +140,7 @@ fn prefix_expr() {
   for (input, expected) in cases {
     let mut parser = Parser::new(Lexer::new(input));
     let parser = parser.parse();
-    check_parse_error(&parser);
+    check_parse_error(parser);
 
     assert_eq!(parser.stmts, expected)
   }
@@ -218,7 +218,7 @@ fn infix_expr() {
   for (input, expected) in cases {
     let mut parser = Parser::new(Lexer::new(input));
     let parser = parser.parse();
-    check_parse_error(&parser);
+    check_parse_error(parser);
 
     assert_eq!(parser.stmts, expected);
   }
@@ -429,8 +429,46 @@ fn operator_precedence_parsing() {
   for (input, expected) in cases {
     let mut parser = Parser::new(Lexer::new(input));
     let parser = parser.parse();
-    check_parse_error(&parser);
+    check_parse_error(parser);
 
     assert_eq!(parser.stmts, expected);
+  }
+}
+
+#[test]
+fn if_expr() {
+  let cases = vec![
+    (
+      "if (x < y) { x }",
+      vec![Stmt::Expr(Expr::If {
+        condition: Box::new(Expr::Infix(
+          Box::new(Expr::Ident(Ident("x"))),
+          Infix::LessThan,
+          Box::new(Expr::Ident(Ident("y"))),
+        )),
+        consequence: vec![Stmt::Expr(Expr::Ident(Ident("x")))],
+        alternative: None,
+      })],
+    ),
+    (
+      "if (x < y) { x } else { y }",
+      vec![Stmt::Expr(Expr::If {
+        condition: Box::new(Expr::Infix(
+          Box::new(Expr::Ident(Ident("x"))),
+          Infix::LessThan,
+          Box::new(Expr::Ident(Ident("y"))),
+        )),
+        consequence: vec![Stmt::Expr(Expr::Ident(Ident("x")))],
+        alternative: Some(vec![Stmt::Expr(Expr::Ident(Ident("y")))]),
+      })],
+    ),
+  ];
+
+  for (input, expected) in cases {
+    let mut parser = Parser::new(Lexer::new(input));
+    let parser = parser.parse();
+    check_parse_error(parser);
+
+    assert_eq!(parser.stmts, expected)
   }
 }

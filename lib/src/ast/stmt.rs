@@ -18,3 +18,5 @@ pub enum Statement<'a> {
   /// [Similar implementation in rust: expression statement](https://doc.rust-lang.org/reference/statements.html#expression-statements)
   Expr(expr::Expr<'a>),
 }
+
+pub type BlockStatement<'a> = Vec<Statement<'a>>;
