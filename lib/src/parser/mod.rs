@@ -26,36 +26,34 @@ pub struct Parser<'a> {
   /// at just the start of an arithmetic expression.
   next_token: Token<'a>,
   errors: ParseErrors,
-}
-
-pub fn new(lexer: Lexer<'_>) -> Parser {
-  let mut parser = Parser {
-    lexer,
-    current_token: Token::Eof,
-    next_token: Token::Eof,
-    errors: vec![],
-  };
-
-  // read 2 tokens, so current_token and next_token are both set.
-  for _ in 0..=1 {
-    parser.move_to_next_tok();
-  }
-
-  parser
+  stmts: ast::Program<'a>,
 }
 
 impl<'a> Parser<'a> {
-  /// We're using a loop to parse statements until we encounter a Eof character
-  pub fn parse(&mut self) -> ast::Program<'a> {
-    let mut program: ast::Program<'a> = vec![];
+  pub fn new(lexer: Lexer<'a>) -> Parser<'a> {
+    let mut parser = Parser {
+      lexer,
+      current_token: Token::Eof,
+      next_token: Token::Eof,
+      errors: vec![],
+      stmts: vec![],
+    };
+    // read 2 tokens, so current_token and next_token are both set.
+    for _ in 0..=1 {
+      parser.move_to_next_tok();
+    }
+    parser
+  }
 
+  /// We're using a loop to parse statements until we encounter a Eof character
+  pub fn parse(&mut self) -> &Self {
     while !self.current_token_is(&Token::Eof) {
       if let Some(stmt) = self.parse_stmt() {
-        program.push(stmt);
+        self.stmts.push(stmt);
       }
       self.move_to_next_tok();
     }
-    program
+    self
   }
 
   fn get_errors(&self) -> ParseErrors {
@@ -63,12 +61,15 @@ impl<'a> Parser<'a> {
   }
 }
 
+// token
 impl<'a> Parser<'a> {
+  /// It' s used to move pointer to next token, and usually work with `self.parse_*` methods.
   fn move_to_next_tok(&mut self) {
     self.current_token = self.next_token.clone();
     self.next_token = self.lexer.move_to_next_tok();
   }
 
+  /// try to match next token, and move on.
   fn expect_next_is(&mut self, tok: Token) -> bool {
     if self.next_token_is(&tok) {
       self.move_to_next_tok();
@@ -105,6 +106,7 @@ impl<'a> Parser<'a> {
   }
 }
 
+// statements
 impl<'a> Parser<'a> {
   fn parse_stmt(&mut self) -> Option<ast::Statement<'a>> {
     match self.current_token {
@@ -165,6 +167,7 @@ impl<'a> Parser<'a> {
   }
 }
 
+// expressions
 impl<'a> Parser<'a> {
   fn parse_expr(&mut self, precedence: ast::Precedence) -> Option<ast::Expr<'a>> {
     let mut left_expr = match self.current_token {
@@ -283,6 +286,7 @@ impl<'a> Parser<'a> {
   }
 }
 
+// precedence
 impl Parser<'_> {
   fn token_to_precedence(&self, tok: &Token) -> ast::Precedence {
     match tok {

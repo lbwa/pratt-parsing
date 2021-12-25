@@ -1,8 +1,8 @@
 use crate::ast::{Expr, Ident, Infix, Literal, Prefix, Statement as Stmt};
-use crate::lexer;
-use crate::parser;
+use crate::lexer::Lexer;
+use crate::parser::Parser;
 
-fn check_parse_error(parser: &mut parser::Parser) {
+fn check_parse_error(parser: &Parser) {
   let errors = parser.get_errors();
 
   if errors.is_empty() {
@@ -24,12 +24,12 @@ fn let_statements() {
   let foobar = 838383;
   ";
 
-  let mut parser = parser::new(lexer::new(input));
-  let program = parser.parse();
-  check_parse_error(&mut parser);
+  let mut parser = Parser::new(Lexer::new(input));
+  let parser = parser.parse();
+  check_parse_error(&parser);
 
   assert_eq!(
-    program,
+    parser.stmts,
     vec![
       Stmt::Let(Ident("x")),
       Stmt::Let(Ident("y")),
@@ -46,33 +46,36 @@ fn return_statements() {
   return 993322;
   ";
 
-  let mut parser = parser::new(lexer::new(input));
-  let program = parser.parse();
-  check_parse_error(&mut parser);
+  let mut parser = Parser::new(Lexer::new(input));
+  let parser = parser.parse();
+  check_parse_error(&parser);
 
-  assert_eq!(program, vec![Stmt::Return, Stmt::Return, Stmt::Return])
+  assert_eq!(parser.stmts, vec![Stmt::Return, Stmt::Return, Stmt::Return])
 }
 
 #[test]
 fn ident_expr() {
   let input = "foobar;";
 
-  let mut parser = parser::new(lexer::new(input));
-  let program = parser.parse();
-  check_parse_error(&mut parser);
+  let mut parser = Parser::new(Lexer::new(input));
+  let parser = parser.parse();
+  check_parse_error(&parser);
 
-  assert_eq!(program, vec![Stmt::Expr(Expr::Ident(Ident("foobar")))]);
+  assert_eq!(parser.stmts, vec![Stmt::Expr(Expr::Ident(Ident("foobar")))]);
 }
 
 #[test]
 fn integer_literal_expr() {
   let input = "5;";
 
-  let mut parser = parser::new(lexer::new(input));
-  let program = parser.parse();
-  check_parse_error(&mut parser);
+  let mut parser = Parser::new(Lexer::new(input));
+  let parser = parser.parse();
+  check_parse_error(&parser);
 
-  assert_eq!(program, vec![Stmt::Expr(Expr::Literal(Literal::Int(5)))]);
+  assert_eq!(
+    parser.stmts,
+    vec![Stmt::Expr(Expr::Literal(Literal::Int(5)))]
+  );
 }
 
 #[test]
@@ -100,11 +103,11 @@ fn bool_literal_expr() {
   ];
 
   for (input, expected) in cases {
-    let mut parser = parser::new(lexer::new(input));
-    let program = parser.parse();
-    check_parse_error(&mut parser);
+    let mut parser = Parser::new(Lexer::new(input));
+    let parser = parser.parse();
+    check_parse_error(&parser);
 
-    assert_eq!(program, expected);
+    assert_eq!(parser.stmts, expected);
   }
 }
 
@@ -135,11 +138,11 @@ fn prefix_expr() {
   ];
 
   for (input, expected) in cases {
-    let mut parser = parser::new(lexer::new(input));
-    let program = parser.parse();
-    check_parse_error(&mut parser);
+    let mut parser = Parser::new(Lexer::new(input));
+    let parser = parser.parse();
+    check_parse_error(&parser);
 
-    assert_eq!(program, expected)
+    assert_eq!(parser.stmts, expected)
   }
 }
 
@@ -213,11 +216,11 @@ fn infix_expr() {
   ];
 
   for (input, expected) in cases {
-    let mut parser = parser::new(lexer::new(input));
-    let program = parser.parse();
-    check_parse_error(&mut parser);
+    let mut parser = Parser::new(Lexer::new(input));
+    let parser = parser.parse();
+    check_parse_error(&parser);
 
-    assert_eq!(program, expected);
+    assert_eq!(parser.stmts, expected);
   }
 }
 
@@ -424,10 +427,10 @@ fn operator_precedence_parsing() {
   ];
 
   for (input, expected) in cases {
-    let mut parser = parser::new(lexer::new(input));
-    let program = parser.parse();
-    check_parse_error(&mut parser);
+    let mut parser = Parser::new(Lexer::new(input));
+    let parser = parser.parse();
+    check_parse_error(&parser);
 
-    assert_eq!(program, expected);
+    assert_eq!(parser.stmts, expected);
   }
 }

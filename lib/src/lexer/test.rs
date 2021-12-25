@@ -111,7 +111,7 @@ fn tokenize() {
     Token::Eof,
   ];
 
-  let mut lexer = super::new(input);
+  let mut lexer = super::Lexer::new(input);
   for tt in expected {
     let tok = lexer.move_to_next_tok();
 

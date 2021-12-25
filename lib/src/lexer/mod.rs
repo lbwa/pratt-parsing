@@ -18,19 +18,19 @@ pub struct Lexer<'a> {
   ch: u8,
 }
 
-pub fn new(input: &str) -> Lexer {
-  let mut lexer = Lexer {
-    input,
-    bytes: input.as_bytes().to_owned(),
-    pos: 0,
-    read_pos: 0,
-    ch: token::CHAR_NUL_BYTE,
-  };
-  lexer.read_char();
-  lexer
-}
-
 impl<'a> Lexer<'a> {
+  pub fn new(input: &str) -> Lexer {
+    let mut lexer = Lexer {
+      input,
+      bytes: input.as_bytes().to_owned(),
+      pos: 0,
+      read_pos: 0,
+      ch: token::CHAR_NUL_BYTE,
+    };
+    lexer.read_char();
+    lexer
+  }
+
   /// similar to `self.read_char`, except that it doesn't increment `self.pos`
   /// and `self.read_pos`. We only want to "peek" ahead in the input and not
   /// move around it.
