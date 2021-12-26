@@ -455,3 +455,23 @@ fn if_expr() {
     assert_eq!(parser.stmts, expected)
   }
 }
+
+#[test]
+fn function_literal() {
+  let cases = vec![(
+    "fn (x, y) { x + y; }",
+    vec![Stmt::Expr(Expr::Function {
+      params: vec![Ident("x"), Ident("y")],
+      body: vec![Stmt::Expr(Expr::Infix(
+        Box::new(Expr::Ident(Ident("x"))),
+        Infix::Plus,
+        Box::new(Expr::Ident(Ident("y"))),
+      ))],
+    })],
+  )];
+
+  for (input, expected) in cases {
+    let parser = parser!(input);
+    assert_eq!(parser.stmts, expected);
+  }
+}

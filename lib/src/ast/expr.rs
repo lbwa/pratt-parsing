@@ -106,4 +106,9 @@ pub enum Expr<'a> {
     consequence: BlockStatement<'a>,
     alternative: Option<BlockStatement<'a>>,
   },
+  /// `fn <parameters> <block statements>`
+  Function {
+    params: Vec<super::Ident<'a>>,
+    body: BlockStatement<'a>,
+  },
 }

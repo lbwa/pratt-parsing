@@ -190,6 +190,7 @@ impl<'a> Parser<'a> {
       Token::Bool(_) => self.parse_bool_expr(),
       Token::LParen => self.parse_grouped_expr(),
       Token::If => self.parse_if_expr(),
+      Token::Function => self.parse_function_literal(),
       _ => {
         // unexpected token type
         self.error_no_prefix_parser();
@@ -340,6 +341,63 @@ impl<'a> Parser<'a> {
       consequence,
       alternative,
     })
+  }
+}
+
+impl<'a> Parser<'a> {
+  fn parse_function_literal(&mut self) -> Option<ast::Expr<'a>> {
+    if !self.expect_next_is(Token::LParen) {
+      return None;
+    }
+
+    let params = if let Some(params) = self.parse_function_params() {
+      params
+    } else {
+      vec![]
+    };
+
+    if !self.expect_next_is(Token::LBrace) {
+      return None;
+    }
+
+    let body = if let Some(body) = self.parse_block_stmt() {
+      body
+    } else {
+      vec![]
+    };
+
+    Some(ast::Expr::Function { params, body })
+  }
+
+  fn parse_function_params(&mut self) -> Option<Vec<ast::Ident<'a>>> {
+    let mut identifiers = vec![];
+    if self.next_token_is(&Token::RParen) {
+      self.move_to_next_tok();
+      return Some(identifiers);
+    }
+
+    if self.current_token_is(&Token::LParen) {
+      self.move_to_next_tok();
+    }
+
+    if let Some(ident) = self.parse_ident() {
+      identifiers.push(ident);
+    }
+
+    while self.next_token_is(&Token::Comma) {
+      for _ in 0..=1 {
+        self.move_to_next_tok();
+      }
+      if let Some(ident) = self.parse_ident() {
+        identifiers.push(ident);
+      }
+    }
+
+    if !self.expect_next_is(Token::RParen) {
+      return None;
+    }
+
+    Some(identifiers)
   }
 }
 
