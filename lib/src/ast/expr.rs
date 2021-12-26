@@ -111,4 +111,11 @@ pub enum Expr<'a> {
     params: Vec<super::Ident<'a>>,
     body: BlockStatement<'a>,
   },
+  /// `<expression>(<comma separated expressions>)`
+  Call {
+    function: Box<Expr<'a>>,
+    // `Vec<T>` is already on the heap, `Box<Vec<T>>` makes an extra allocation
+    // https://rust-lang.github.io/rust-clippy/master/index.html#box_collection
+    arguments: Vec<Expr<'a>>,
+  },
 }

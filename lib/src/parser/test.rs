@@ -411,6 +411,84 @@ fn operator_precedence_parsing() {
         )),
       ))],
     ),
+    (
+      "a + add(b * c) + d",
+      vec![Stmt::Expr(Expr::Infix(
+        Box::new(Expr::Infix(
+          Box::new(Expr::Ident(Ident("a"))),
+          Infix::Plus,
+          Box::new(Expr::Call {
+            function: Box::new(Expr::Ident(Ident("add"))),
+            arguments: vec![Expr::Infix(
+              Box::new(Expr::Ident(Ident("b"))),
+              Infix::Multiply,
+              Box::new(Expr::Ident(Ident("c"))),
+            )],
+          }),
+        )),
+        Infix::Plus,
+        Box::new(Expr::Ident(Ident("d"))),
+      ))],
+    ),
+    (
+      "add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8))",
+      vec![Stmt::Expr(Expr::Call {
+        function: Box::new(Expr::Ident(Ident("add"))),
+        arguments: vec![
+          Expr::Ident(Ident("a")),
+          Expr::Ident(Ident("b")),
+          Expr::Literal(Literal::Int(1)),
+          Expr::Infix(
+            Box::new(Expr::Literal(Literal::Int(2))),
+            Infix::Multiply,
+            Box::new(Expr::Literal(Literal::Int(3))),
+          ),
+          Expr::Infix(
+            Box::new(Expr::Literal(Literal::Int(4))),
+            Infix::Plus,
+            Box::new(Expr::Literal(Literal::Int(5))),
+          ),
+          Expr::Call {
+            function: Box::new(Expr::Ident(Ident("add"))),
+            arguments: vec![
+              Expr::Literal(Literal::Int(6)),
+              Expr::Infix(
+                Box::new(Expr::Literal(Literal::Int(7))),
+                Infix::Multiply,
+                Box::new(Expr::Literal(Literal::Int(8))),
+              ),
+            ],
+          },
+        ],
+      })],
+    ),
+    (
+      "add(a + b + c * d / f + g)",
+      vec![Stmt::Expr(Expr::Call {
+        function: Box::new(Expr::Ident(Ident("add"))),
+        arguments: vec![Expr::Infix(
+          Box::new(Expr::Infix(
+            Box::new(Expr::Infix(
+              Box::new(Expr::Ident(Ident("a"))),
+              Infix::Plus,
+              Box::new(Expr::Ident(Ident("b"))),
+            )),
+            Infix::Plus,
+            Box::new(Expr::Infix(
+              Box::new(Expr::Infix(
+                Box::new(Expr::Ident(Ident("c"))),
+                Infix::Multiply,
+                Box::new(Expr::Ident(Ident("d"))),
+              )),
+              Infix::Divide,
+              Box::new(Expr::Ident(Ident("f"))),
+            )),
+          )),
+          Infix::Plus,
+          Box::new(Expr::Ident(Ident("g"))),
+        )],
+      })],
+    ),
   ];
 
   for (input, expected) in cases {
@@ -474,4 +552,28 @@ fn function_literal() {
     let parser = parser!(input);
     assert_eq!(parser.stmts, expected);
   }
+}
+
+#[test]
+fn call_expr() {
+  let parser = parser!("add(1, 2 * 3, 4 + 5)");
+  assert_eq!(
+    parser.stmts,
+    vec![Stmt::Expr(Expr::Call {
+      function: Box::new(Expr::Ident(Ident("add"))),
+      arguments: vec![
+        Expr::Literal(Literal::Int(1)),
+        Expr::Infix(
+          Box::new(Expr::Literal(Literal::Int(2))),
+          Infix::Multiply,
+          Box::new(Expr::Literal(Literal::Int(3)))
+        ),
+        Expr::Infix(
+          Box::new(Expr::Literal(Literal::Int(4))),
+          Infix::Plus,
+          Box::new(Expr::Literal(Literal::Int(5)))
+        )
+      ]
+    })]
+  )
 }

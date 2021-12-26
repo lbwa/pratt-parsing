@@ -183,6 +183,7 @@ impl<'a> Parser<'a> {
 // expressions
 impl<'a> Parser<'a> {
   fn parse_expr(&mut self, precedence: ast::Precedence) -> Option<ast::Expr<'a>> {
+    // handle prefix
     let mut left_expr = match self.current_token {
       Token::Ident(_) => self.parse_ident_expr(),
       Token::Int(_) => self.parse_int_expr(),
@@ -198,6 +199,7 @@ impl<'a> Parser<'a> {
       }
     };
 
+    // handle infix
     while !self.next_token_is(&Token::Semicolon) && precedence < self.next_token_precedence() {
       match self.next_token {
         Token::Plus
@@ -213,6 +215,14 @@ impl<'a> Parser<'a> {
           self.move_to_next_tok();
           left_expr = if let Some(expr) = left_expr {
             self.parse_infix_expr(expr)
+          } else {
+            None
+          }
+        }
+        Token::LParen => {
+          self.move_to_next_tok();
+          left_expr = if let Some(expr) = left_expr {
+            self.parse_call_expr(expr)
           } else {
             None
           }
@@ -342,6 +352,38 @@ impl<'a> Parser<'a> {
       alternative,
     })
   }
+
+  fn parse_call_expr(&mut self, func: ast::Expr<'a>) -> Option<ast::Expr<'a>> {
+    let arguments = self.parse_call_args()?;
+    Some(ast::Expr::Call {
+      function: Box::new(func),
+      arguments,
+    })
+  }
+
+  fn parse_call_args(&mut self) -> Option<Vec<ast::Expr<'a>>> {
+    let mut args = vec![];
+    if self.next_token_is(&Token::RParen) {
+      self.move_to_next_tok();
+      return Some(args);
+    }
+
+    self.move_to_next_tok();
+    args.push(self.parse_expr(ast::Precedence::Lowest)?);
+
+    while self.next_token_is(&Token::Comma) {
+      for _ in 0..=1 {
+        self.move_to_next_tok();
+      }
+      args.push(self.parse_expr(ast::Precedence::Lowest)?);
+    }
+
+    if !self.expect_next_is(Token::RParen) {
+      return None;
+    }
+
+    Some(args)
+  }
 }
 
 impl<'a> Parser<'a> {
@@ -409,6 +451,7 @@ impl Parser<'_> {
       Token::LessThan | Token::GreaterThan => ast::Precedence::LessGreater,
       Token::Plus | Token::Minus => ast::Precedence::Sum,
       Token::Slash | Token::Asterisk => ast::Precedence::Product,
+      Token::LParen => ast::Precedence::Call,
 
       _ => ast::Precedence::Lowest,
     }
