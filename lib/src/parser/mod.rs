@@ -128,10 +128,7 @@ impl<'a> Parser<'a> {
       }
     };
 
-    let name = match self.parse_ident() {
-      Some(name) => name,
-      None => return None,
-    };
+    let name = self.parse_ident()?;
 
     if !self.expect_next_is(Token::Assign) {
       return None;
@@ -139,11 +136,11 @@ impl<'a> Parser<'a> {
 
     self.move_to_next_tok();
 
-    // TODO: We're skipping the expression until we encounter a semicolon
+    let value_expr = self.parse_expr(ast::Precedence::Lowest)?;
     if self.next_token_is(&Token::Semicolon) {
       self.move_to_next_tok();
     }
-    Some(ast::Statement::Let(name))
+    Some(ast::Statement::Let(name, value_expr))
   }
 
   fn parse_return_stmt(&mut self) -> Option<ast::Statement<'a>> {

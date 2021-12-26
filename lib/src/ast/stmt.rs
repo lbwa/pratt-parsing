@@ -2,7 +2,7 @@ use super::expr;
 
 #[derive(PartialEq, Debug, Clone)]
 pub enum Statement<'a> {
-  Let(super::Ident<'a>),
+  Let(super::Ident<'a>, super::Expr<'a>),
   Return,
   /// It's a statement that consists solely of one expression. and not really
   /// a distinct statement, and only a wrapper.

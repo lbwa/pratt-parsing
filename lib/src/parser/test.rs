@@ -30,15 +30,23 @@ fn let_statements() {
   let parser = parser!(
     "let x = 5;
     let y = 10;
-    let foobar = 838383;"
+    let foobar = x + y;
+    "
   );
 
   assert_eq!(
     parser.stmts,
     vec![
-      Stmt::Let(Ident("x")),
-      Stmt::Let(Ident("y")),
-      Stmt::Let(Ident("foobar"))
+      Stmt::Let(Ident("x"), Expr::Literal(Literal::Int(5))),
+      Stmt::Let(Ident("y"), Expr::Literal(Literal::Int(10))),
+      Stmt::Let(
+        Ident("foobar"),
+        Expr::Infix(
+          Box::new(Expr::Ident(Ident("x"))),
+          Infix::Plus,
+          Box::new(Expr::Ident(Ident("y")))
+        )
+      )
     ]
   );
 }
