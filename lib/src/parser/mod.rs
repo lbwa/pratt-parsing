@@ -144,11 +144,12 @@ impl<'a> Parser<'a> {
   }
 
   fn parse_return_stmt(&mut self) -> Option<ast::Statement<'a>> {
-    // TODO: we're skipping the expression until we encounter a semicolon.
+    self.move_to_next_tok();
+    let value_expr = self.parse_expr(ast::Precedence::Lowest)?;
     while !self.current_token_is(&Token::Semicolon) {
       self.move_to_next_tok();
     }
-    Some(ast::Statement::Return)
+    Some(ast::Statement::Return(value_expr))
   }
 
   fn parse_expr_stmt(&mut self) -> Option<ast::Statement<'a>> {

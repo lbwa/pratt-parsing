@@ -3,7 +3,7 @@ use super::expr;
 #[derive(PartialEq, Debug, Clone)]
 pub enum Statement<'a> {
   Let(super::Ident<'a>, super::Expr<'a>),
-  Return,
+  Return(super::Expr<'a>),
   /// It's a statement that consists solely of one expression. and not really
   /// a distinct statement, and only a wrapper.
   /// We need it because it's totally legal in Monkey to write the following

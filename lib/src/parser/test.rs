@@ -56,10 +56,21 @@ fn return_statements() {
   let parser = parser!(
     "return 5;
     return 10;
-    return 993322;"
+    return a + 20;"
   );
 
-  assert_eq!(parser.stmts, vec![Stmt::Return, Stmt::Return, Stmt::Return])
+  assert_eq!(
+    parser.stmts,
+    vec![
+      Stmt::Return(Expr::Literal(Literal::Int(5))),
+      Stmt::Return(Expr::Literal(Literal::Int(10))),
+      Stmt::Return(Expr::Infix(
+        Box::new(Expr::Ident(Ident("a"))),
+        Infix::Plus,
+        Box::new(Expr::Literal(Literal::Int(20)))
+      ))
+    ]
+  )
 }
 
 #[test]
