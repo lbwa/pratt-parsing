@@ -56,7 +56,7 @@ impl<'a> Parser<'a> {
     self
   }
 
-  fn get_errors(&self) -> ParseErrors {
+  pub fn get_errors(&self) -> ParseErrors {
     self.errors.clone()
   }
 }

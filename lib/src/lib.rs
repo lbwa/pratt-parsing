@@ -1,5 +1,5 @@
 #![allow(dead_code)]
 mod ast;
-mod lexer;
-mod parser;
+pub mod lexer;
+pub mod parser;
 mod token;
