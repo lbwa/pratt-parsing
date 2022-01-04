@@ -144,7 +144,3 @@ impl<'a> Lexer<'a> {
     }
   }
 }
-
-fn is_number(ch: u8) -> bool {
-  (b'0'..=b'9').contains(&ch)
-}
