@@ -59,6 +59,10 @@ impl<'a> Parser<'a> {
   pub fn get_errors(&self) -> ParseErrors {
     self.errors.clone()
   }
+
+  pub fn get_stmts(&self) -> ast::Program<'a> {
+    self.stmts.clone()
+  }
 }
 
 // token
