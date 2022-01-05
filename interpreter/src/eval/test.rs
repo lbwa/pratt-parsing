@@ -1,7 +1,7 @@
 macro_rules! eval {
   ($input: tt) => {{
-    use monkey_rust::lexer::Lexer;
-    use monkey_rust::parser::Parser;
+    use pratt_parsing::lexer::Lexer;
+    use pratt_parsing::parser::Parser;
     let mut parser = Parser::new(Lexer::new($input));
     let parser = parser.parse();
     let evaluator = super::Evaluator::new();
