@@ -37,7 +37,7 @@ impl Evaluator {
   fn eval_expr(&self, expr: ast::Expr) -> Option<Object> {
     match expr {
       Expr::Literal(literal) => self.eval_literal(literal),
-      Expr::Prefix(prefix, expr) => self.eval_prefix_expr(prefix, expr),
+      Expr::Prefix(prefix, expr) => self.eval_prefix_expr(prefix, *expr),
       Expr::Infix(left, infix, right) => self.eval_infix_expr(*left, infix, *right),
       _ => None,
     }
@@ -53,11 +53,11 @@ impl Evaluator {
 
 // eval_x_expr
 impl Evaluator {
-  fn eval_prefix_expr(&self, prefix: ast::Prefix, expr: Box<ast::Expr>) -> Option<Object> {
-    self.eval_expr(*expr).map(|result| {
+  fn eval_prefix_expr(&self, prefix: ast::Prefix, expr: ast::Expr) -> Option<Object> {
+    self.eval_expr(expr).map(|result| {
       match prefix {
         ast::Prefix::Bang => {
-          let result = match result {
+          match result {
             Object::Bool(false) => Object::Bool(true),
             Object::Int(val) => {
               if val == 0 {
@@ -67,8 +67,7 @@ impl Evaluator {
               }
             }
             _ => Object::Bool(false),
-          };
-          result
+          }
         }
 
         ast::Prefix::Minus => {
