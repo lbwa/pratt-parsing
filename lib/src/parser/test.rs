@@ -431,6 +431,18 @@ fn operator_precedence_parsing() {
       ))],
     ),
     (
+      "(1 < 2) == true",
+      vec![Stmt::Expr(Expr::Infix(
+        Box::new(Expr::Infix(
+          Box::new(Expr::Literal(Literal::Int(1))),
+          Infix::LessThan,
+          Box::new(Expr::Literal(Literal::Int(2))),
+        )),
+        Infix::Equal,
+        Box::new(Expr::Literal(Literal::Bool(true))),
+      ))],
+    ),
+    (
       "a + add(b * c) + d",
       vec![Stmt::Expr(Expr::Infix(
         Box::new(Expr::Infix(
