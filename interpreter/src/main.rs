@@ -1,6 +1,6 @@
 use monkey_interpreter::eval;
-use monkey_rust::lexer::Lexer;
-use monkey_rust::parser::Parser;
+use pratt_parsing::lexer::Lexer;
+use pratt_parsing::parser::Parser;
 use rustyline::error::ReadlineError as ReadLineError;
 use rustyline::Editor;
 
