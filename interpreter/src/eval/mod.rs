@@ -56,21 +56,21 @@ impl Evaluator {
 impl Evaluator {
   fn eval_prefix_expr(&self, prefix: ast::Prefix, expr: Box<ast::Expr>) -> Option<Object> {
     let expr = (expr.borrow() as &ast::Expr).clone();
-    if let Some(result) = self.eval_expr(expr) {
+    self.eval_expr(expr).map(|result| {
       match prefix {
         ast::Prefix::Bang => {
           let result = match result {
             Object::Bool(false) => Object::Bool(true),
             Object::Int(val) => {
               if val == 0 {
-                Object::Bool(true) // !0 should be treated as false
+                Object::Bool(true) // !0 should be treated as true
               } else {
                 Object::Bool(false)
               }
             }
             _ => Object::Bool(false),
           };
-          Some(result)
+          result
         }
 
         ast::Prefix::Minus => {
@@ -78,16 +78,14 @@ impl Evaluator {
             Object::Int(val) => Object::Int(-val),
             _ => Self::error(format!("Illegal syntax: -{}", result)),
           };
-          Some(result)
+          result
         }
 
         ast::Prefix::Plus => match result {
-          Object::Int(_) => Some(result),
-          _ => Some(Self::error(format!("Illegal syntax: +{}", result))),
+          Object::Int(_) => result,
+          _ => Self::error(format!("Illegal syntax: +{}", result)),
         },
       }
-    } else {
-      None
-    }
+    })
   }
 }
