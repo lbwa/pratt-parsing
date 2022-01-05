@@ -1,4 +1,4 @@
-use monkey_interpreter::eval;
+use pratt_interpreter::eval;
 use pratt_parsing::lexer::Lexer;
 use pratt_parsing::parser::Parser;
 use rustyline::error::ReadlineError as ReadLineError;

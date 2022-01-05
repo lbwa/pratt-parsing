@@ -13,7 +13,15 @@ use crate::object::Object;
 
 #[test]
 fn eval_integer_expr() {
-  let cases = vec![("5", 5), ("10", 10)];
+  let cases = vec![
+    ("5", 5),
+    ("10", 10),
+    ("-5", -5),
+    ("-10", -10),
+    ("1 + 2 + 3 + 4", 10),
+    ("1 + 2 - 3 + 4", 4),
+    ("1 + (2 * 3) / 4", 2),
+  ];
 
   for (input, expected) in cases {
     assert_eq!(eval!(input), Some(Object::Int(expected)))
@@ -22,7 +30,23 @@ fn eval_integer_expr() {
 
 #[test]
 fn eval_bool_expr() {
-  let cases = vec![("true", true), ("false", false)];
+  let cases = vec![
+    ("true", true),
+    ("false", false),
+    ("1 < 2", true),
+    ("1 > 2", false),
+    ("1 > 1", false),
+    ("1 < 1", false),
+    ("1 == 1", true),
+    ("1 != 2", true),
+    ("1 != 1", false),
+    ("true == true", true),
+    ("false == false", true),
+    ("(1 < 2) == true", true),
+    ("(1 < 2) == false", false),
+    ("(1 > 2) == true", false),
+    ("(1 > 2) == false", true),
+  ];
 
   for (input, expected) in cases {
     assert_eq!(eval!(input), Some(Object::Bool(expected)))
