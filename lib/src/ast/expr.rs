@@ -58,7 +58,7 @@ impl fmt::Display for Infix {
       Infix::Divide => "÷",
       Infix::GreaterThan => ">",
       Infix::LessThan => "<",
-      Infix::Equal => "=",
+      Infix::Equal => "==",
       Infix::NotEqual => "≠",
       Infix::GreaterThanEqual => "≥",
       Infix::LessThanEqual => "≤",
