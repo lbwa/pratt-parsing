@@ -5,6 +5,7 @@ use std::ops::{Add, Div, Mul, Sub};
 pub enum Object {
   Int(i64),
   Bool(bool),
+  ReturnValue(Box<Object>),
 
   Error(String),
 }
@@ -14,6 +15,7 @@ impl fmt::Display for Object {
     match *self {
       Object::Int(ref val) => write!(formatter, "{}", val),
       Object::Bool(val) => write!(formatter, "{}", val),
+      Object::ReturnValue(ref val) => write!(formatter, "{}", val),
       Object::Error(ref val) => write!(formatter, "{}", val),
     }
   }

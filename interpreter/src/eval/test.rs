@@ -108,3 +108,17 @@ fn eval_if_else_expr() {
     assert_eq!(eval!(input), expected)
   }
 }
+
+#[test]
+fn eval_return_stmt() {
+  let cases = vec![
+    ("return 1;", 1),
+    ("return 1; 2;", 1),
+    ("return 6 * 7; 8", 42),
+    ("99; return 7 * 8; 9;", 56),
+  ];
+
+  for (input, expected) in cases {
+    assert_eq!(eval!(input), Some(Object::Int(expected)))
+  }
+}

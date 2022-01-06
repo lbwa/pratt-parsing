@@ -20,7 +20,9 @@ impl Evaluator {
     let mut result: Option<Object> = None;
     for stmt in stmts {
       match self.eval_stmt(stmt) {
+        Some(Object::ReturnValue(val)) => return Some(*val),
         Some(Object::Error(message)) => return Some(Object::Error(message)),
+        // always use the last evaluation as the final answer
         object => result = object,
       }
     }
@@ -30,6 +32,14 @@ impl Evaluator {
   fn eval_stmt(&self, stmt: ast::Statement<'_>) -> Option<Object> {
     match stmt {
       ast::Statement::Expr(expr) => self.eval_expr(expr),
+      ast::Statement::Return(expr) => {
+        let val = self.eval_expr(expr)?;
+        if let Object::Error(_) = &val {
+          Some(val)
+        } else {
+          Some(Object::ReturnValue(Box::new(val)))
+        }
+      }
       _ => None,
     }
   }
