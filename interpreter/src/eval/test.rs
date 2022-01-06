@@ -89,3 +89,22 @@ fn eval_prefix_plus_operator() {
     assert_eq!(eval!(input), Some(Object::Int(expected)))
   }
 }
+
+#[test]
+fn eval_if_else_expr() {
+  let cases = vec![
+    ("if (true) { 1 }", Some(Object::Int(1))),
+    ("if (false) { 1 }", None),
+    ("if (1) { 2 }", Some(Object::Int(2))),
+    ("if (1 < 2) { 3 }", Some(Object::Int(3))),
+    ("if (1 > 2) { 3 }", None),
+    ("if (1 > 2) { 3 } else { 4 }", Some(Object::Int(4))),
+    ("if (1 < 2) { 3 } else { 4 }", Some(Object::Int(3))),
+    ("if (1 * 2 + 3 / 4 - 5) { 6 }", Some(Object::Int(6))),
+    ("if (1 * (2 + 3) / 4 - 5) { 6;\n 7 }", Some(Object::Int(7))),
+  ];
+
+  for (input, expected) in cases {
+    assert_eq!(eval!(input), expected)
+  }
+}

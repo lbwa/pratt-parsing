@@ -2,7 +2,7 @@
 mod test;
 
 use super::object::Object;
-use pratt_parsing::ast::{self, Expr};
+use pratt_parsing::ast::{self, Expr, Statement};
 
 #[derive(Default)]
 pub struct Evaluator;
@@ -39,6 +39,11 @@ impl Evaluator {
       Expr::Literal(literal) => self.eval_literal(literal),
       Expr::Prefix(prefix, expr) => self.eval_prefix_expr(prefix, *expr),
       Expr::Infix(left, infix, right) => self.eval_infix_expr(*left, infix, *right),
+      Expr::If {
+        condition,
+        consequence,
+        alternative,
+      } => self.eval_if_expr(*condition, consequence, alternative),
       _ => None,
     }
   }
@@ -54,35 +59,25 @@ impl Evaluator {
 // eval_x_expr
 impl Evaluator {
   fn eval_prefix_expr(&self, prefix: ast::Prefix, expr: ast::Expr) -> Option<Object> {
-    self.eval_expr(expr).map(|result| {
-      match prefix {
-        ast::Prefix::Bang => {
-          match result {
-            Object::Bool(false) => Object::Bool(true),
-            Object::Int(val) => {
-              if val == 0 {
-                Object::Bool(true) // !0 should be treated as true
-              } else {
-                Object::Bool(false)
-              }
-            }
-            _ => Object::Bool(false),
-          }
-        }
+    self.eval_expr(expr).map(|result| match prefix {
+      ast::Prefix::Bang => match result {
+        Object::Bool(false) => Object::Bool(true),
+        Object::Int(val) => Object::Bool(val == 0),
+        _ => Object::Bool(false),
+      },
 
-        ast::Prefix::Minus => {
-          let result = match result {
-            Object::Int(val) => Object::Int(-val),
-            _ => Self::error(format!("Illegal syntax: -{}", result)),
-          };
-          result
-        }
-
-        ast::Prefix::Plus => match result {
-          Object::Int(_) => result,
-          _ => Self::error(format!("Illegal syntax: +{}", result)),
-        },
+      ast::Prefix::Minus => {
+        let result = match result {
+          Object::Int(val) => Object::Int(-val),
+          _ => Self::error(format!("Illegal syntax: -{}", result)),
+        };
+        result
       }
+
+      ast::Prefix::Plus => match result {
+        Object::Int(_) => result,
+        _ => Self::error(format!("Illegal syntax: +{}", result)),
+      },
     })
   }
 
@@ -109,5 +104,18 @@ impl Evaluator {
       Infix::Divide => left / right,
     };
     Some(result)
+  }
+
+  fn eval_if_expr(
+    &self,
+    condition: ast::Expr,
+    consequence: Vec<Statement>,
+    alternative: Option<Vec<Statement>>,
+  ) -> Option<Object> {
+    match self.eval_expr(condition)? {
+      Object::Bool(val) => self.eval(if val { consequence } else { alternative? }),
+      Object::Int(val) => self.eval(if val != 0 { consequence } else { alternative? }),
+      _ => None,
+    }
   }
 }
