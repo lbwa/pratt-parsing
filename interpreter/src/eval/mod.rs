@@ -17,16 +17,10 @@ impl Evaluator {
   }
 
   pub fn eval(&self, stmts: Vec<ast::Statement<'_>>) -> Option<Object> {
-    let mut result: Option<Object> = None;
-    for stmt in stmts {
-      match self.eval_stmt(stmt)? {
-        Object::ReturnValue(val) => return Some(*val), // unwrap value in ReturnValue
-        Object::Error(message) => return Some(Object::Error(message)),
-        // always use the last evaluation as the final answer
-        object => result = Some(object),
-      }
-    }
-    result
+    self.eval_block_stmt(stmts).map(|result| match result {
+      Object::ReturnValue(val) => *val, // unwrap value for better DX
+      _ => result,
+    })
   }
 
   fn eval_stmt(&self, stmt: ast::Statement<'_>) -> Option<Object> {
@@ -48,7 +42,7 @@ impl Evaluator {
     let mut result: Option<Object> = None;
     for stmt in block_stmts {
       match self.eval_stmt(stmt)? {
-        Object::ReturnValue(val) => return Some(Object::ReturnValue(val)), // different from `eval` method
+        Object::ReturnValue(val) => return Some(Object::ReturnValue(val)),
         Object::Error(error) => return Some(Object::Error(error)),
         obj => result = Some(obj),
       }

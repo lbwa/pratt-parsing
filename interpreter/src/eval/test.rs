@@ -112,10 +112,10 @@ fn eval_if_else_expr() {
 #[test]
 fn eval_return_stmt() {
   let cases = vec![
-    // ("return 1;", 1),
-    // ("return 1; 2;", 1),
-    // ("return 6 * 7; 8", 42),
-    // ("99; return 7 * 8; 9;", 56),
+    ("return 1;", 1),
+    ("return 1; 2;", 1),
+    ("return 6 * 7; 8", 42),
+    ("99; return 7 * 8; 9;", 56),
     (
       "if (10 > 1) {
       if (10 > 1) {
