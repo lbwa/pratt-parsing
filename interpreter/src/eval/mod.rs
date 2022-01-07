@@ -19,11 +19,11 @@ impl Evaluator {
   pub fn eval(&self, stmts: Vec<ast::Statement<'_>>) -> Option<Object> {
     let mut result: Option<Object> = None;
     for stmt in stmts {
-      match self.eval_stmt(stmt) {
-        Some(Object::ReturnValue(val)) => return Some(*val),
-        Some(Object::Error(message)) => return Some(Object::Error(message)),
+      match self.eval_stmt(stmt)? {
+        Object::ReturnValue(val) => return Some(*val), // unwrap value in ReturnValue
+        Object::Error(message) => return Some(Object::Error(message)),
         // always use the last evaluation as the final answer
-        object => result = object,
+        object => result = Some(object),
       }
     }
     result
@@ -42,6 +42,18 @@ impl Evaluator {
       }
       _ => None,
     }
+  }
+
+  fn eval_block_stmt(&self, block_stmts: Vec<ast::Statement>) -> Option<Object> {
+    let mut result: Option<Object> = None;
+    for stmt in block_stmts {
+      match self.eval_stmt(stmt)? {
+        Object::ReturnValue(val) => return Some(Object::ReturnValue(val)), // different from `eval` method
+        Object::Error(error) => return Some(Object::Error(error)),
+        obj => result = Some(obj),
+      }
+    }
+    result
   }
 
   fn eval_expr(&self, expr: ast::Expr) -> Option<Object> {
@@ -123,8 +135,8 @@ impl Evaluator {
     alternative: Option<Vec<Statement>>,
   ) -> Option<Object> {
     match self.eval_expr(condition)? {
-      Object::Bool(val) => self.eval(if val { consequence } else { alternative? }),
-      Object::Int(val) => self.eval(if val != 0 { consequence } else { alternative? }),
+      Object::Bool(val) => self.eval_block_stmt(if val { consequence } else { alternative? }),
+      Object::Int(val) => self.eval_block_stmt(if val != 0 { consequence } else { alternative? }),
       _ => None,
     }
   }
