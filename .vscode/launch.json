@@ -2,23 +2,30 @@
   "version": "0.2.0",
   "configurations": [
     {
+      // user manual: https://github.com/vadimcn/vscode-lldb/blob/v1.6.10/MANUAL.md
+      "name": "Debug Rust Code",
       "type": "lldb",
       "request": "launch",
-      "name": "Debug source code",
+      // "program": "${workspaceFolder}/target/debug/pratt-interpreter",
+      // https://github.com/vadimcn/vscode-lldb/blob/v1.6.10/MANUAL.md#cargo-support
       "cargo": {
         "args": [
           "test",
           "--no-run",
-          "--lib",
-          "--package=monkey-rust"
+          "--lib"
         ],
         "filter": {
-          "name": "monkey-rust",
+          "name": "pratt-interpreter",
           "kind": "lib"
         }
       },
       "args": [],
       "cwd": "${workspaceFolder}",
+      "stopOnEntry": false,
+      // https://github.com/vadimcn/vscode-lldb/blob/v1.6.10/MANUAL.md#rust-language-support
+      "sourceLanguages": [
+        "rust"
+      ]
     }
   ]
 }
