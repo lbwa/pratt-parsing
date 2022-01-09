@@ -4,7 +4,7 @@ macro_rules! eval {
     use pratt_parsing::parser::Parser;
     let mut parser = Parser::new(Lexer::new($input));
     let parser = parser.parse();
-    let evaluator = super::Evaluator::new();
+    let mut evaluator = super::Evaluator::new();
     evaluator.eval(parser.get_stmts())
   }};
 }
@@ -54,6 +54,25 @@ fn eval_bool_expr() {
 }
 
 #[test]
+fn eval_if_else_expr() {
+  let cases = vec![
+    ("if (true) { 1 }", Ok(Object::Int(1))),
+    ("if (false) { 1 }", Ok(Object::None)),
+    ("if (1) { 2 }", Ok(Object::Int(2))),
+    ("if (1 < 2) { 3 }", Ok(Object::Int(3))),
+    ("if (1 > 2) { 3 }", Ok(Object::None)),
+    ("if (1 > 2) { 3 } else { 4 }", Ok(Object::Int(4))),
+    ("if (1 < 2) { 3 } else { 4 }", Ok(Object::Int(3))),
+    ("if (1 * 2 + 3 / 4 - 5) { 6 }", Ok(Object::Int(6))),
+    ("if (1 * (2 + 3) / 4 - 5) { 6;\n 7 }", Ok(Object::Int(7))),
+  ];
+
+  for (input, expected) in cases {
+    assert_eq!(eval!(input), expected)
+  }
+}
+
+#[test]
 fn eval_bang_operator() {
   let cases = vec![
     ("!true", false),
@@ -91,21 +110,16 @@ fn eval_prefix_plus_operator() {
 }
 
 #[test]
-fn eval_if_else_expr() {
+fn eval_let_stmt() {
   let cases = vec![
-    ("if (true) { 1 }", Ok(Object::Int(1))),
-    ("if (false) { 1 }", Ok(Object::None)),
-    ("if (1) { 2 }", Ok(Object::Int(2))),
-    ("if (1 < 2) { 3 }", Ok(Object::Int(3))),
-    ("if (1 > 2) { 3 }", Ok(Object::None)),
-    ("if (1 > 2) { 3 } else { 4 }", Ok(Object::Int(4))),
-    ("if (1 < 2) { 3 } else { 4 }", Ok(Object::Int(3))),
-    ("if (1 * 2 + 3 / 4 - 5) { 6 }", Ok(Object::Int(6))),
-    ("if (1 * (2 + 3) / 4 - 5) { 6;\n 7 }", Ok(Object::Int(7))),
+    ("let a = 1; a;", 1),
+    ("let a = 2 * 3; a;", 6),
+    ("let a = 1; let b = a; b;", 1),
+    ("let a = 1; let b = a; let c = a + b + 2; c", 4),
   ];
 
-  for (input, expected) in cases {
-    assert_eq!(eval!(input), expected)
+  for (input, expect) in cases {
+    assert_eq!(eval!(input), Ok(Object::Int(expect)))
   }
 }
 
@@ -156,6 +170,7 @@ fn catch_internal_error() {
     }",
       "Couldn't perform operation: true / false",
     ),
+    ("foo", "Identifier not found: foo"),
   ];
 
   for (input, expected) in cases {
