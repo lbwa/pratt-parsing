@@ -131,3 +131,34 @@ fn eval_return_stmt() {
     assert_eq!(eval!(input), Some(Object::Int(expected)))
   }
 }
+
+#[test]
+fn catch_internal_error() {
+  let cases = vec![
+    ("1 + true;", "Couldn't perform operation: 1 + true"),
+    ("1 + true; 2", "Couldn't perform operation: 1 + true"),
+    ("+true", "Illegal syntax: +true"),
+    ("true * false", "Couldn't perform operation: true * false"),
+    (
+      "
+    if (1 < 2) {
+      true / false;
+    }",
+      "Couldn't perform operation: true / false",
+    ),
+    (
+      "
+    if (1 < 2) {
+      if (2 < 3) {
+        return true / false;
+      }
+      return 1;
+    }",
+      "Couldn't perform operation: true / false",
+    ),
+  ];
+
+  for (input, expected) in cases {
+    assert_eq!(eval!(input), Some(Object::Error(expected.to_string())))
+  }
+}

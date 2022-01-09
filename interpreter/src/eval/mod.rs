@@ -12,10 +12,6 @@ impl Evaluator {
     Evaluator {}
   }
 
-  pub fn error(message: String) -> Object {
-    Object::Error(message)
-  }
-
   pub fn eval(&self, stmts: Vec<ast::Statement<'_>>) -> Option<Object> {
     self.eval_block_stmt(stmts).map(|result| match result {
       Object::ReturnValue(val) => *val, // unwrap value for better DX
@@ -28,7 +24,7 @@ impl Evaluator {
       ast::Statement::Expr(expr) => self.eval_expr(expr),
       ast::Statement::Return(expr) => {
         let val = self.eval_expr(expr)?;
-        if let Object::Error(_) = &val {
+        if Self::is_error(&val) {
           Some(val)
         } else {
           Some(Object::ReturnValue(Box::new(val)))
@@ -43,7 +39,7 @@ impl Evaluator {
     for stmt in block_stmts {
       match self.eval_stmt(stmt)? {
         Object::ReturnValue(val) => return Some(Object::ReturnValue(val)),
-        Object::Error(error) => return Some(Object::Error(error)),
+        Object::Error(error) => return Some(Self::error(error)),
         obj => result = Some(obj),
       }
     }
@@ -69,6 +65,17 @@ impl Evaluator {
       ast::Literal::Int(val) => Some(Object::Int(val)),
       ast::Literal::Bool(val) => Some(Object::Bool(val)),
     }
+  }
+}
+
+// errors
+impl Evaluator {
+  pub fn error(message: String) -> Object {
+    Object::Error(message)
+  }
+
+  pub fn is_error(object: &Object) -> bool {
+    matches!(object, Object::Error(_))
   }
 }
 
@@ -105,6 +112,13 @@ impl Evaluator {
   ) -> Option<Object> {
     let left = self.eval_expr(left_expr)?;
     let right = self.eval_expr(right_expr)?;
+
+    if Self::is_error(&left) {
+      return Some(left);
+    }
+    if Self::is_error(&right) {
+      return Some(right);
+    }
 
     use ast::Infix;
     let result = match infix {
