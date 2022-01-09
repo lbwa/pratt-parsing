@@ -5,6 +5,7 @@ use super::environment::Environment;
 use super::object::Object;
 use pratt_parsing::ast;
 
+#[derive(Default)]
 pub struct Evaluator<'ident> {
   environment: Environment<'ident>,
 }

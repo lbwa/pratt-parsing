@@ -1,6 +1,7 @@
 use super::object::Object;
 use std::collections::HashMap;
 
+#[derive(Default)]
 pub struct Environment<'ident> {
   records: HashMap<&'ident str, Object>,
 }
