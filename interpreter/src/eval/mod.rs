@@ -26,14 +26,7 @@ impl Evaluator {
   fn eval_stmt(&self, stmt: ast::Statement<'_>) -> Option<Object> {
     match stmt {
       ast::Statement::Expr(expr) => self.eval_expr(expr),
-      ast::Statement::Return(expr) => {
-        let val = self.eval_expr(expr)?;
-        if Self::is_error(&val) {
-          Some(val)
-        } else {
-          Some(Object::ReturnValue(Box::new(val)))
-        }
-      }
+      ast::Statement::Return(expr) => self.eval_return_stmt(expr),
       _ => None,
     }
   }
@@ -80,6 +73,18 @@ impl Evaluator {
 
   pub fn is_error(object: &Object) -> bool {
     matches!(object, Object::Error(_))
+  }
+}
+
+// eval_x_stmt
+impl Evaluator {
+  fn eval_return_stmt(&self, expr: ast::Expr) -> Option<Object> {
+    let val = self.eval_expr(expr)?;
+    if Self::is_error(&val) {
+      Some(val)
+    } else {
+      Some(Object::ReturnValue(Box::new(val)))
+    }
   }
 }
 
