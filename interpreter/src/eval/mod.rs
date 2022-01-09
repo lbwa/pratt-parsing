@@ -12,11 +12,15 @@ impl Evaluator {
     Evaluator {}
   }
 
-  pub fn eval(&self, stmts: Vec<ast::Statement<'_>>) -> Option<Object> {
-    self.eval_block_stmt(stmts).map(|result| match result {
-      Object::ReturnValue(val) => *val, // unwrap value for better DX
-      _ => result,
-    })
+  pub fn eval(&self, stmts: Vec<ast::Statement<'_>>) -> Result<Object, String> {
+    match self.eval_block_stmt(stmts) {
+      Some(result) => match result {
+        Object::ReturnValue(val) => Ok(*val), // unwrap value for better DX
+        Object::Error(error) => Err(error),
+        val => Ok(val),
+      },
+      None => Ok(Object::None),
+    }
   }
 
   fn eval_stmt(&self, stmt: ast::Statement<'_>) -> Option<Object> {

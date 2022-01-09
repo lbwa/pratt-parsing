@@ -24,7 +24,7 @@ fn eval_integer_expr() {
   ];
 
   for (input, expected) in cases {
-    assert_eq!(eval!(input), Some(Object::Int(expected)))
+    assert_eq!(eval!(input), Ok(Object::Int(expected)))
   }
 }
 
@@ -49,7 +49,7 @@ fn eval_bool_expr() {
   ];
 
   for (input, expected) in cases {
-    assert_eq!(eval!(input), Some(Object::Bool(expected)))
+    assert_eq!(eval!(input), Ok(Object::Bool(expected)))
   }
 }
 
@@ -68,7 +68,7 @@ fn eval_bang_operator() {
   ];
 
   for (input, expected) in cases {
-    assert_eq!(eval!(input), Some(Object::Bool(expected)))
+    assert_eq!(eval!(input), Ok(Object::Bool(expected)))
   }
 }
 
@@ -77,7 +77,7 @@ fn eval_prefix_minus_operator() {
   let cases = vec![("-1", -1), ("-10", -10)];
 
   for (input, expected) in cases {
-    assert_eq!(eval!(input), Some(Object::Int(expected)))
+    assert_eq!(eval!(input), Ok(Object::Int(expected)))
   }
 }
 
@@ -86,22 +86,22 @@ fn eval_prefix_plus_operator() {
   let cases = vec![("+0", 0), ("+1", 1)];
 
   for (input, expected) in cases {
-    assert_eq!(eval!(input), Some(Object::Int(expected)))
+    assert_eq!(eval!(input), Ok(Object::Int(expected)))
   }
 }
 
 #[test]
 fn eval_if_else_expr() {
   let cases = vec![
-    ("if (true) { 1 }", Some(Object::Int(1))),
-    ("if (false) { 1 }", None),
-    ("if (1) { 2 }", Some(Object::Int(2))),
-    ("if (1 < 2) { 3 }", Some(Object::Int(3))),
-    ("if (1 > 2) { 3 }", None),
-    ("if (1 > 2) { 3 } else { 4 }", Some(Object::Int(4))),
-    ("if (1 < 2) { 3 } else { 4 }", Some(Object::Int(3))),
-    ("if (1 * 2 + 3 / 4 - 5) { 6 }", Some(Object::Int(6))),
-    ("if (1 * (2 + 3) / 4 - 5) { 6;\n 7 }", Some(Object::Int(7))),
+    ("if (true) { 1 }", Ok(Object::Int(1))),
+    ("if (false) { 1 }", Ok(Object::None)),
+    ("if (1) { 2 }", Ok(Object::Int(2))),
+    ("if (1 < 2) { 3 }", Ok(Object::Int(3))),
+    ("if (1 > 2) { 3 }", Ok(Object::None)),
+    ("if (1 > 2) { 3 } else { 4 }", Ok(Object::Int(4))),
+    ("if (1 < 2) { 3 } else { 4 }", Ok(Object::Int(3))),
+    ("if (1 * 2 + 3 / 4 - 5) { 6 }", Ok(Object::Int(6))),
+    ("if (1 * (2 + 3) / 4 - 5) { 6;\n 7 }", Ok(Object::Int(7))),
   ];
 
   for (input, expected) in cases {
@@ -128,7 +128,7 @@ fn eval_return_stmt() {
   ];
 
   for (input, expected) in cases {
-    assert_eq!(eval!(input), Some(Object::Int(expected)))
+    assert_eq!(eval!(input), Ok(Object::Int(expected)))
   }
 }
 
@@ -159,6 +159,6 @@ fn catch_internal_error() {
   ];
 
   for (input, expected) in cases {
-    assert_eq!(eval!(input), Some(Object::Error(expected.to_string())))
+    assert_eq!(eval!(input), Err(expected.to_string()))
   }
 }
