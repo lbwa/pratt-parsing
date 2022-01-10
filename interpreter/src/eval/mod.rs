@@ -39,7 +39,6 @@ impl<'ident> Evaluator<'ident> {
   fn eval_block_stmt(&mut self, block_stmts: Vec<ast::Statement<'ident>>) -> Option<Object> {
     let mut result: Option<Object> = None;
     for stmt in block_stmts {
-      println!("stmt ---> {:?}", stmt.clone());
       match self.eval_stmt(stmt)? {
         Object::ReturnValue(val) => return Some(Object::ReturnValue(val)),
         Object::Error(error) => return Some(Self::error(error)),
