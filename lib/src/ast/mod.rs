@@ -6,6 +6,6 @@ pub use self::stmt::*;
 
 /// It represents a kind of AST node, unlike `crate::token::Token::Ident(&'a str)` which represents a kind of Token type.
 #[derive(PartialEq, Debug, Clone)]
-pub struct Ident<'a>(pub &'a str);
+pub struct Ident<'ident>(pub &'ident str);
 
-pub type Program<'a> = Vec<Statement<'a>>;
+pub type Program<'ident> = Vec<Statement<'ident>>;

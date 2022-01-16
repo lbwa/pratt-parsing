@@ -1,10 +1,10 @@
 #[derive(Debug, Clone, PartialEq)]
-pub enum Token<'a> {
+pub enum Token<'input> {
   Illegal,
   Eof,
 
   // identifier + literal
-  Ident(&'a str),
+  Ident(&'input str),
   Int(i64),
   Bool(bool),
 

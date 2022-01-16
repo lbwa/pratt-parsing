@@ -1,14 +1,14 @@
 use super::expr;
 
 #[derive(PartialEq, Debug, Clone)]
-pub enum Statement<'a> {
-  Let(super::Ident<'a>, super::Expr<'a>),
-  Return(super::Expr<'a>),
+pub enum Statement<'ident> {
+  Let(super::Ident<'ident>, super::Expr<'ident>),
+  Return(super::Expr<'ident>),
   /// It's a statement that consists solely of one expression. and not really
   /// a distinct statement, and only a wrapper.
   /// We need it because it's totally legal in Monkey to write the following
   /// code:
-  /// ```monkey
+  /// ```ignore
   /// let x = 5; // normal statement
   /// x + 10; // expression statement
   /// ```
@@ -16,7 +16,7 @@ pub enum Statement<'a> {
   /// add it to the Statements slice of ast::Program
   ///
   /// [Similar implementation in rust: expression statement](https://doc.rust-lang.org/reference/statements.html#expression-statements)
-  Expr(expr::Expr<'a>),
+  Expr(expr::Expr<'ident>),
 }
 
-pub type BlockStatement<'a> = Vec<Statement<'a>>;
+pub type BlockStatement<'ident> = Vec<Statement<'ident>>;

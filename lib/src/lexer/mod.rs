@@ -4,8 +4,11 @@ mod test;
 use crate::token;
 use crate::token::Token;
 
-pub struct Lexer<'a> {
-  input: &'a str,
+/// As known as scanner.
+/// 1. It could transform text literals into tokens.
+/// 2. It should only be manipulated by parser
+pub struct Lexer<'input> {
+  input: &'input str,
   bytes: Vec<u8>,
   /// current position in input (points to current char)
   pos: usize,
@@ -18,7 +21,7 @@ pub struct Lexer<'a> {
   ch: u8,
 }
 
-impl<'a> Lexer<'a> {
+impl<'input> Lexer<'input> {
   pub fn new(input: &str) -> Lexer {
     let mut lexer = Lexer {
       input,
@@ -52,7 +55,7 @@ impl<'a> Lexer<'a> {
     self.read_pos += 1;
   }
 
-  fn read_identifier(&mut self) -> Token<'a> {
+  fn read_identifier(&mut self) -> Token<'input> {
     let from = self.pos;
 
     while let b'a'..=b'z' | b'A'..=b'Z' | b'_' = self.ch {
@@ -73,7 +76,7 @@ impl<'a> Lexer<'a> {
     }
   }
 
-  fn read_number(&mut self) -> Token<'a> {
+  fn read_number(&mut self) -> Token<'input> {
     let from = self.pos;
 
     while let b'0'..=b'9' = self.ch {
@@ -85,7 +88,7 @@ impl<'a> Lexer<'a> {
     }
   }
 
-  pub fn move_to_next_tok(&mut self) -> token::Token<'a> {
+  pub fn move_to_next_tok(&mut self) -> token::Token<'input> {
     self.skip_whitespace();
     let tok = match self.ch {
       // operators

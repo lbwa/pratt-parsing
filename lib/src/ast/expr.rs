@@ -91,31 +91,31 @@ pub enum Precedence {
 }
 
 #[derive(PartialEq, Debug, Clone)]
-pub enum Expr<'a> {
-  Ident(super::Ident<'a>),
+pub enum Expr<'ident> {
+  Ident(super::Ident<'ident>),
   /// Literal expression directly describes a number, character, string or
   /// boolean value.
   Literal(super::Literal),
   /// `<prefix operator><expression>`
-  Prefix(Prefix, Box<Expr<'a>>),
+  Prefix(Prefix, Box<Expr<'ident>>),
   /// `<expression><infix operator><expression>`
-  Infix(Box<Expr<'a>>, Infix, Box<Expr<'a>>),
+  Infix(Box<Expr<'ident>>, Infix, Box<Expr<'ident>>),
   /// `if (<condition>) <consequence> else <alternative>`
   If {
-    condition: Box<Expr<'a>>,
-    consequence: BlockStatement<'a>,
-    alternative: Option<BlockStatement<'a>>,
+    condition: Box<Expr<'ident>>,
+    consequence: BlockStatement<'ident>,
+    alternative: Option<BlockStatement<'ident>>,
   },
   /// `fn <parameters> <block statements>`
   Function {
-    params: Vec<super::Ident<'a>>,
-    body: BlockStatement<'a>,
+    params: Vec<super::Ident<'ident>>,
+    body: BlockStatement<'ident>,
   },
   /// `<expression>(<comma separated expressions>)`
   Call {
-    function: Box<Expr<'a>>,
+    function: Box<Expr<'ident>>,
     // `Vec<T>` is already on the heap, `Box<Vec<T>>` makes an extra allocation
     // https://rust-lang.github.io/rust-clippy/master/index.html#box_collection
-    arguments: Vec<Expr<'a>>,
+    arguments: Vec<Expr<'ident>>,
   },
 }
