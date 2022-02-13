@@ -13,8 +13,8 @@ jobs:
     strategy:
       matrix:
         os:
-          - macOS-latest
           - ubuntu-latest
+          # - macOS-latest
           # - windows-latest
         rust:
           - stable
@@ -51,10 +51,6 @@ jobs:
       - name: Cache
         uses: actions/cache@v2
         with:
-          # Note: crates from the denoland/deno git repo always get rebuilt,
-          # and their outputs ('deno', 'libdeno.rlib' etc.) are quite big,
-          # so we cache only those subdirectories of target/{debug|release} that
-          # contain the build output for crates that come from the registry.
           path: |-
             .cargo_home
             target/*/.*
@@ -68,7 +64,7 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: Run cargo check
-        run: cargo check --locked
+        run: cargo check
 
       - name: Run cargo clippy
         run: cargo clippy -- -D warnings
